@@ -5,49 +5,10 @@ import {
   ArrowTrendingDownIcon,
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
+import DataTable from "../../components/common/DataTable";
 
 const Savings = () => {
-  const [searchQuery, setSearchQuery] = useState("");
   const [savings, setSavings] = useState([]);
-
-  const stats = [
-    {
-      title: "Total Savings",
-      value: "₹ 15.2M",
-      icon: BanknotesIcon,
-      trend: "+8.1%",
-      trendUp: true,
-      bgColor: "bg-primary/10",
-      iconColor: "text-primary",
-    },
-    {
-      title: "Monthly Deposits",
-      value: "₹ 2.5M",
-      icon: ArrowTrendingUpIcon,
-      trend: "+12.3%",
-      trendUp: true,
-      bgColor: "bg-green-50",
-      iconColor: "text-green-500",
-    },
-    {
-      title: "Monthly Withdrawals",
-      value: "₹ 1.2M",
-      icon: ArrowTrendingDownIcon,
-      trend: "-5.4%",
-      trendUp: false,
-      bgColor: "bg-red-50",
-      iconColor: "text-red-500",
-    },
-    {
-      title: "Average Monthly Savings",
-      value: "₹ 25,000",
-      icon: CalendarDaysIcon,
-      trend: "+3.2%",
-      trendUp: true,
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-500",
-    },
-  ];
 
   useEffect(() => {
     const fetchSavings = async () => {
@@ -63,11 +24,48 @@ const Savings = () => {
     fetchSavings();
   }, []);
 
-  const filteredSavings = savings.filter(
-    (saving) =>
-      saving.memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      saving.memberId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const savingsColumns = [
+    { key: "memberId", header: "Member ID" },
+    { key: "memberName", header: "Name" },
+    { key: "amount", header: "Amount", render: (item) => `₹ ${item.amount}` },
+    { key: "date", header: "Date" },
+    { key: "type", header: "Type" },
+    {
+      key: "status",
+      header: "Status",
+      render: (item) => (
+        <span
+          className={`px-2 py-1 text-xs font-medium rounded-full ${
+            item.status === "Completed"
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          {item.status}
+        </span>
+      ),
+    },
+  ];
+
+  const savingsFilters = [
+    {
+      key: "type",
+      label: "Filter by Type",
+      options: [
+        { value: "Monthly Contribution", label: "Monthly Contribution" },
+        { value: "Additional Savings", label: "Additional Savings" },
+        { value: "Withdrawal", label: "Withdrawal" },
+      ],
+    },
+    {
+      key: "status",
+      label: "Filter by Status",
+      options: [
+        { value: "Completed", label: "Completed" },
+        { value: "Pending", label: "Pending" },
+      ],
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -119,78 +117,12 @@ const Savings = () => {
       </div>
 
       {/* Savings Table */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200 ">
-        <div className="flex items-center space-x-4 mb-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by member name or ID..."
-              className="w-full px-4 py-2 rounded-lg border border-gray-300  bg-white text-gray-900  focus:ring-primary focus:border-primary"
-            />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 ">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">
-                  Member ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 ">
-              {filteredSavings.map((saving) => (
-                <tr key={saving.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ">
-                    {saving.memberId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ">
-                    {saving.memberName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ">
-                    ₹ {saving.amount}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ">
-                    {saving.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ">
-                    {saving.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        saving.status === "Completed"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {saving.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable
+        columns={savingsColumns}
+        data={savings}
+        filters={savingsFilters}
+        searchPlaceholder="Search by member name or savings ID..."
+      />
     </div>
   );
 };
