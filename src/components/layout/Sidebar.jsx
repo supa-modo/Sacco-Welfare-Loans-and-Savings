@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   HomeIcon,
   UserGroupIcon,
@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { MdOutlineLogout } from "react-icons/md";
 import logo from "/logo.png";
+import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ darkMode, userRole }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,6 +36,13 @@ const Sidebar = ({ darkMode, userRole }) => {
   };
 
   const links = navigation[userRole] || [];
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <div
@@ -126,9 +134,7 @@ const Sidebar = ({ darkMode, userRole }) => {
                   </span>
                 </div>
                 <button
-                  onClick={() => {
-                    // Add logout functionality here
-                  }}
+                  onClick={handleLogout}
                   className="flex items-center px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-primary-dark transition-colors duration-200"
                 >
                   <MdOutlineLogout className="h-4 w-4 mr-1" />
@@ -137,9 +143,7 @@ const Sidebar = ({ darkMode, userRole }) => {
               </div>
             ) : (
               <button
-                onClick={() => {
-                  // Add logout functionality here
-                }}
+                // onClick={handleLogout}
                 className="w-full flex justify-center"
                 title="Logout"
               >
