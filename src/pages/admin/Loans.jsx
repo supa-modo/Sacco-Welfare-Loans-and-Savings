@@ -68,7 +68,7 @@ const Loans = () => {
         <span
           className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
             item.status === "Active"
-              ? "bg-primary-200 text-green-700"
+              ? "bg-primary-300 text-green-800"
               : item.status === "Paid"
               ? "bg-blue-100 text-blue-800"
               : item.status === "Pending"
@@ -87,7 +87,7 @@ const Loans = () => {
       key: "status",
       label: "Filter by Status",
       options: [
-        { value: "All", label: "All" },
+        { value: "All", label: "All Loans" },
         { value: "Active", label: "Active" },
         { value: "Paid", label: "Paid" },
         { value: "Pending", label: "Pending" },

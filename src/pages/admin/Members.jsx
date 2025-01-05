@@ -93,6 +93,7 @@ const Members = () => {
       key: "status",
       label: "Filter by Status",
       options: [
+        { value: "All", label: "All Members" },
         { value: "Active", label: "Active" },
         { value: "Inactive", label: "Inactive" },
       ],
@@ -115,12 +116,14 @@ const Members = () => {
         {stats.map((stat, index) => (
           <div
             key={index}
-            className="bg-white p-6 rounded-lg border border-gray-200"
+            className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-6 rounded-xl border border-gray-300"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">{stat.title}</p>
-                <p className="text-2xl font-semibold text-gray-900 mt-1">
+                <p className="text-sm text-amber-600 font-semibold font-geist">
+                  {stat.title}
+                </p>
+                <p className="text-3xl font-bold font-nunito-sans text-gray-700 mt-1">
                   {stat.value}
                 </p>
                 <div
@@ -134,7 +137,7 @@ const Members = () => {
               <div
                 className={`h-12 w-12 ${stat.bgColor} rounded-full flex items-center justify-center`}
               >
-                <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
+                <stat.icon className={`${stat.iconColor}`} />
               </div>
             </div>
           </div>
@@ -142,14 +145,13 @@ const Members = () => {
       </div>
 
       {/* DataTable */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <DataTable
-          columns={memberColumns}
-          data={members}
-          filters={memberFilters}
-          searchPlaceholder="Search by name, email or ID..."
-        />
-      </div>
+
+      <DataTable
+        columns={memberColumns}
+        data={members}
+        filters={memberFilters}
+        searchPlaceholder="Search by name, email or ID..."
+      />
     </div>
   );
 };

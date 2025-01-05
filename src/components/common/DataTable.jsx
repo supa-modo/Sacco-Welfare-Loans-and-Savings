@@ -105,7 +105,7 @@ const DataTable = ({
                   <button
                     key={option.value}
                     onClick={() => handleFilterClick(filter.key, option.value)}
-                    className={`px-6 py-2 text-sm font-semibold font-nunito-sans rounded-lg transition-all
+                    className={`px-6 py-2 text-sm shadow-md font-semibold font-nunito-sans rounded-lg transition-all
                       ${
                         activeFilters[filter.key] === option.value
                           ? "bg-primary-500 text-white"
