@@ -27,10 +27,10 @@ const Login = () => {
       const result = await login(data.email, data.password);
       if (result.success) {
         // Navigate based on user role
-        if (result.role === 'admin') {
-          navigate('/admin');
+        if (result.role === "admin") {
+          navigate("/admin/dashboard");
         } else {
-          navigate('/member');
+          navigate("/member");
         }
       } else {
         setLoginError(result.error);

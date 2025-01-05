@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -19,7 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           {/* Admin Routes */}
           <Route
             path="/admin"
@@ -35,6 +40,7 @@ function App() {
             <Route path="loans" element={<Loans />} />
             <Route path="savings" element={<Savings />} />
             <Route path="members" element={<Members />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
           </Route>
 
           {/* Member Routes */}
