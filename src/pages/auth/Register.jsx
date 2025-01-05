@@ -40,10 +40,10 @@ const Register = () => {
         <div className="text-center">
           <img src={logo} alt="sacco-logo" className="w-24 h-24 mx-auto" />
           <h2 className="text-3xl font-extrabold text-primary dark:text-white">
-            Create Account
+            Create Your Account
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Join our SACCO community today
+            Join our Welfare Community today
           </p>
         </div>
 

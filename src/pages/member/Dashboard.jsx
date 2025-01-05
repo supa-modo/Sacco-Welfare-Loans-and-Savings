@@ -4,18 +4,33 @@ import {
   ChartBarIcon,
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
-import Navbar from "../../components/layout/Navbar";
-import Sidebar from "../../components/layout/Sidebar";
+import { useEffect, useState } from "react";
 
 const MemberDashboard = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("darkMode") === "true";
+  });
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("darkMode", darkMode);
+  }, [darkMode]);
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex h-screen ${darkMode ? "dark" : ""}`}>
       <main className="flex-1 overflow-y-auto">
         <div className="py-6 px-8">
           {/* Payment Statistics */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2
+                className={`text-xl font-semibold text-gray-800 ${
+                  darkMode ? "text-red-500" : "text-gray-800"
+                }`}
+              >
                 Payment statistics
               </h2>
               <div className="flex items-center space-x-2 text-sm">
@@ -87,7 +102,7 @@ const MemberDashboard = () => {
 
           {/* Billing History */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-300 mb-6">
               Billing history
             </h2>
             <div className="bg-white rounded-lg border border-gray-200">
