@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import DataTable from "../../components/common/DataTable";
 import loansData from "../../data/loans.json";
+import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
 
 const Loans = () => {
   const [loans, setLoans] = useState([]);
@@ -102,9 +103,7 @@ const Loans = () => {
         <h1 className="text-3xl font-extrabold text-amber-700">
           Welfare Loan Applications
         </h1>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-          New Loan Application
-        </button>
+        <LoanApplicationButton />
       </div>
 
       {/* Stats Grid */}
