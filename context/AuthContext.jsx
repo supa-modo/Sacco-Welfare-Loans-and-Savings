@@ -17,9 +17,9 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  const login = (username, password) => {
+  const login = (email, password) => {
     const foundUser = users.users.find(
-      (u) => u.username === username && u.password === password
+      (u) => u.username === email && u.password === password
     );
 
     if (foundUser) {
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userWithoutPassword);
       return { success: true, role: foundUser.role };
     }
-    return { success: false, error: "Invalid credentials" };
+    return { success: false, error: "Invalid email or password" };
   };
 
   const logout = () => {
@@ -35,21 +35,23 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
   };
 
-  const isAuthenticated = () => !!user;
+  const isAuthenticated = () => {
+    return !!user;
+  };
 
   const isAdmin = () => user?.role === "admin";
 
   const isMember = () => user?.role === "member";
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        login, 
-        logout, 
-        isAuthenticated, 
-        isAdmin, 
-        isMember 
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isAuthenticated,
+        isAdmin,
+        isMember,
       }}
     >
       {children}

@@ -1,0 +1,31 @@
+{
+  "savings": [
+    {
+      "id": 1,
+      "memberId": "M001",
+      "memberName": "John Doe",
+      "amount": 5000,
+      "date": "2025-01-01",
+      "type": "Monthly Contribution",
+      "status": "Completed"
+    },
+    {
+      "id": 2,
+      "memberId": "M002",
+      "memberName": "Jane Smith",
+      "amount": 3000,
+      "date": "2025-01-02",
+      "type": "Emergency Fund",
+      "status": "Completed"
+    },
+    {
+      "id": 3,
+      "memberId": "M003",
+      "memberName": "Alice Johnson",
+      "amount": 7500,
+      "date": "2025-01-03",
+      "type": "Monthly Contribution",
+      "status": "Pending"
+    }
+  ]
+}

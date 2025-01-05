@@ -1,18 +1,38 @@
-import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import Navbar from "./Navbar";
+import { useState, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 
-const DashboardLayout = ({ isAdmin }) => {
+const DashboardLayout = () => {
+  const { user } = useAuth();
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true';
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', darkMode);
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar isAdmin={isAdmin} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-          <div className="container mx-auto px-6 py-8">
+    <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
+      <div className={`flex h-screen overflow-hidden transition-colors duration-200 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <Sidebar darkMode={darkMode} userRole={user?.role} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          <main className={`flex-1 overflow-y-auto p-6 transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
             <Outlet />
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </div>
   );

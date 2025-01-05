@@ -1,115 +1,77 @@
-import { Link, useLocation } from "react-router-dom";
+import { NavLink } from 'react-router-dom';
 import {
   HomeIcon,
-  CreditCardIcon,
   UserGroupIcon,
   DocumentTextIcon,
+  CurrencyDollarIcon,
   ChartBarIcon,
-  CogIcon,
-  InboxIcon,
-  BanknotesIcon,
-  UsersIcon,
-  ClipboardDocumentListIcon,
-} from "@heroicons/react/24/outline";
+  Cog6ToothIcon,
+} from '@heroicons/react/24/outline';
 
-const Sidebar = ({ isAdmin }) => {
-  const location = useLocation();
+const Sidebar = ({ darkMode, userRole }) => {
+  const navigation = {
+    admin: [
+      { name: 'Dashboard', to: '/admin/dashboard', icon: HomeIcon },
+      { name: 'Members', to: '/admin/members', icon: UserGroupIcon },
+      { name: 'Loans', to: '/admin/loans', icon: DocumentTextIcon },
+      { name: 'Savings', to: '/admin/savings', icon: CurrencyDollarIcon },
+      { name: 'Reports', to: '/admin/reports', icon: ChartBarIcon },
+      { name: 'Settings', to: '/admin/settings', icon: Cog6ToothIcon },
+    ],
+    member: [
+      { name: 'Dashboard', to: '/member/dashboard', icon: HomeIcon },
+      { name: 'My Loans', to: '/member/loans', icon: DocumentTextIcon },
+      { name: 'My Savings', to: '/member/savings', icon: CurrencyDollarIcon },
+      { name: 'Settings', to: '/member/settings', icon: Cog6ToothIcon },
+    ],
+  };
 
-  const memberMenuItems = [
-    { name: "Home", icon: HomeIcon, path: "/dashboard" },
-    { name: "Payments", icon: BanknotesIcon, path: "/payments" },
-    { name: "Maintenance", icon: CogIcon, path: "/maintenance" },
-    { name: "Inbox", icon: InboxIcon, path: "/inbox" },
-  ];
-
-  const memberDataItems = [
-    { name: "Properties", icon: HomeIcon, path: "/properties" },
-    { name: "Tenants", icon: UsersIcon, path: "/tenants" },
-    { name: "Transactions", icon: DocumentTextIcon, path: "/transactions" },
-    { name: "Finance", icon: BanknotesIcon, path: "/finance" },
-    { name: "Commissions", icon: CreditCardIcon, path: "/commissions" },
-    { name: "Reports", icon: ClipboardDocumentListIcon, path: "/reports" },
-  ];
-
-  const adminMenuItems = [
-    { name: "Dashboard", icon: HomeIcon, path: "/admin/dashboard" },
-    { name: "Members", icon: UserGroupIcon, path: "/admin/members" },
-    { name: "Loans", icon: CreditCardIcon, path: "/admin/loans" },
-    { name: "Transactions", icon: DocumentTextIcon, path: "/admin/transactions" },
-    { name: "Reports", icon: ChartBarIcon, path: "/admin/reports" },
-    { name: "Settings", icon: CogIcon, path: "/admin/settings" },
-  ];
-
-  const menuItems = isAdmin ? adminMenuItems : memberMenuItems;
-  const dataItems = !isAdmin ? memberDataItems : [];
+  const links = navigation[userRole] || [];
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">S</span>
-          </div>
-          <span className="text-xl font-bold text-gray-800">SACCO</span>
-        </div>
+    <div
+      className={`w-64 transition-colors duration-200 ${
+        darkMode
+          ? 'bg-gray-800 text-gray-200 border-r border-gray-700'
+          : 'bg-white text-gray-600 border-r border-gray-200'
+      }`}
+    >
+      <div className="h-16 flex items-center justify-center">
+        <h1 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+          SACCO Welfare
+        </h1>
       </div>
 
-      <nav className="flex-1 overflow-y-auto">
-        <div className="px-3 py-3">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-            MENU
-          </div>
-          <div className="space-y-1">
-            {menuItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm space-x-3 
-                    ${
-                      isActive
-                        ? "bg-primary text-white"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              );
-            })}
-          </div>
+      <nav className="mt-5 px-2">
+        <div className="space-y-1">
+          {links.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.to}
+              className={({ isActive }) =>
+                `group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
+                  isActive
+                    ? darkMode
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-primary text-white'
+                    : darkMode
+                    ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`
+              }
+            >
+              <item.icon
+                className={`mr-4 flex-shrink-0 h-6 w-6 transition-colors duration-200 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-400'
+                } group-hover:text-gray-300`}
+                aria-hidden="true"
+              />
+              {item.name}
+            </NavLink>
+          ))}
         </div>
-
-        {!isAdmin && (
-          <div className="px-3 py-3">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              DATA
-            </div>
-            <div className="space-y-1">
-              {dataItems.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className={`flex items-center px-3 py-2 rounded-lg text-sm space-x-3 
-                      ${
-                        isActive
-                          ? "bg-primary text-white"
-                          : "text-gray-600 hover:bg-gray-50"
-                      }`}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </nav>
-    </aside>
+    </div>
   );
 };
 

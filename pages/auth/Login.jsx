@@ -23,16 +23,20 @@ const Login = () => {
   const [loginError, setLoginError] = useState("");
 
   const onSubmit = async (data) => {
-    const result = await login(data.email, data.password);
-    if (result.success) {
-      // Navigate based on user role
-      if (result.role === 'admin') {
-        navigate('/admin/dashboard');
+    try {
+      const result = await login(data.email, data.password);
+      if (result.success) {
+        // Navigate based on user role
+        if (result.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/member');
+        }
       } else {
-        navigate('/member/dashboard');
+        setLoginError(result.error);
       }
-    } else {
-      setLoginError(result.error);
+    } catch (error) {
+      setLoginError("An error occurred during login");
     }
   };
 
@@ -120,13 +124,13 @@ const Login = () => {
                 />
                 <button
                   type="button"
-                  className="absolute right-5 top-1/2 -translate-y-1/2"
                   onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
                 >
                   {showPassword ? (
-                    <FaEyeSlash className="h-5 w-5 text-gray-500" />
+                    <FaEyeSlash className="h-5 w-5 text-gray-500 dark:text-gray-300" />
                   ) : (
-                    <FaEye className="h-5 w-5 text-gray-500" />
+                    <FaEye className="h-5 w-5 text-gray-500 dark:text-gray-300" />
                   )}
                 </button>
               </div>
@@ -142,38 +146,48 @@ const Login = () => {
             <div className="flex items-center">
               <input
                 id="remember-me"
+                name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
               />
               <label
                 htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                className="ml-2 block text-sm text-gray-600 dark:text-gray-400"
               >
                 Remember me
               </label>
             </div>
 
-            <Link
-              to="/forgot-password"
-              className="text-sm font-bold text-primary hover:text-primary/80"
-            >
-              Forgot password?
-            </Link>
+            <div className="text-sm">
+              <Link
+                to="/forgot-password"
+                className="font-medium text-primary hover:text-primary/90"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </div>
 
-          <button type="submit" className="btn-primary w-full font-semibold">
-            Sign in
-          </button>
-
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="font-bold text-primary hover:text-primary/80"
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
-              Sign up now
-            </Link>
-          </p>
+              Sign in
+            </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                className="font-medium text-primary hover:text-primary/90"
+              >
+                Register here
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>
