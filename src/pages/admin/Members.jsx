@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import DataTable from "../../components/common/DataTable";
 import membersData from "../../data/members.json";
+import AddMemberButton from "../../components/forms/NewMemberForm";
 
 const Members = () => {
   const [members, setMembers] = useState([]);
@@ -106,9 +107,7 @@ const Members = () => {
         <h1 className="text-3xl font-extrabold text-amber-700">
           Staff Welfare Members
         </h1>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-          Add New Member
-        </button>
+        <AddMemberButton />
       </div>
 
       {/* Stats Grid */}
