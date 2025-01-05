@@ -7,6 +7,7 @@ import {
   ChartBarIcon,
   Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
+import logo from "/logo.png";
 
 const Sidebar = ({ darkMode, userRole }) => {
   const navigation = {
@@ -36,14 +37,17 @@ const Sidebar = ({ darkMode, userRole }) => {
           : "bg-white text-gray-600 border-r border-gray-200"
       }`}
     >
-      <div className="h-16 flex items-center justify-center">
-        <h1
-          className={`text-xl font-semibold ${
-            darkMode ? "text-white" : "text-gray-800"
-          }`}
-        >
-          SACCO Welfare
-        </h1>
+      <div className="h-20 flex items-center justify-center ">
+        <img src={logo} alt="welfare logo" className="w-20 h-20" />
+        <div>
+          <h1
+            className={`text-xl font-extrabold ${
+              darkMode ? "text-white" : "text-primary"
+            }`}
+          >
+            Staff Sacco Welfare Name
+          </h1>
+        </div>
       </div>
 
       <nav className="mt-5 px-2">
@@ -56,7 +60,7 @@ const Sidebar = ({ darkMode, userRole }) => {
                 `group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
                   isActive
                     ? darkMode
-                      ? "bg-gray-900 text-white"
+                      ? "bg-primary text-white"
                       : "bg-primary text-white"
                     : darkMode
                     ? "text-gray-300 hover:bg-gray-700 hover:text-white"

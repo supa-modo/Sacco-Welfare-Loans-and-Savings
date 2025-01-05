@@ -18,6 +18,11 @@ export default {
           900: "#064e3b",
         },
       },
+      fontFamily: {
+        geist: ["Geist", "sans-serif"],
+        "nunito-sans": ["Nunito Sans", "sans-serif"],
+        "open-sans": ["Open Sans", "sans-serif"],
+      },
     },
   },
   plugins: [],

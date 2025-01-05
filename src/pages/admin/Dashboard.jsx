@@ -157,7 +157,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <main className="flex-1 overflow-y-auto">
         <div className="py-6 px-8">
           {/* Payment Statistics */}
