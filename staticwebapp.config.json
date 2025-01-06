@@ -1,0 +1,48 @@
+{
+  "routes": [
+    {
+      "route": "/",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/register",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/admin/dashboard",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/admin/members",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/admin/loans",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/admin/settings",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/admin/reports",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/*", "/css/*", "/js/*", "/favicon.ico"]
+  }
+}

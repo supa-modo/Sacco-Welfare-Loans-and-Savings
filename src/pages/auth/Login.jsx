@@ -187,8 +187,11 @@ const Login = () => {
                 Register here
               </Link>
             </p>
+            <p className="text-red-500 italic text-xs text-center mt-2">demo credentials: admin@admin.com pw - admin123</p>
           </div>
+          
         </form>
+        
       </div>
     </div>
   );
