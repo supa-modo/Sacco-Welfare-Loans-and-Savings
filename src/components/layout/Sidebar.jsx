@@ -77,7 +77,7 @@ const Sidebar = ({ darkMode, userRole }) => {
             <div>
               <h1
                 className={`text-xl font-extrabold ${
-                  darkMode ? "text-white" : "text-primary"
+                  darkMode ? "text-white" : "text-amber-700"
                 }`}
               >
                 Staff Sacco Welfare Name

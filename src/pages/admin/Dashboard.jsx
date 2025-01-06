@@ -66,9 +66,11 @@ const AdminDashboard = () => {
       key: "status",
       label: "Filter by Status",
       options: [
+        { value: "All", label: "All Loans" },
         { value: "Active", label: "Active" },
-        { value: "Completed", label: "Completed" },
+        { value: "Paid", label: "Paid" },
         { value: "Pending", label: "Pending" },
+        { value: "Rejected", label: "Rejected" },
       ],
     },
   ];
@@ -106,8 +108,9 @@ const AdminDashboard = () => {
       key: "status",
       label: "Filter by Status",
       options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
+        { value: "All", label: "All Members" },
+        { value: "Active", label: "Active Members" },
+        { value: "Inactive", label: "Inactive Members" },
       ],
     },
   ];
@@ -141,9 +144,9 @@ const AdminDashboard = () => {
       key: "type",
       label: "Filter by Type",
       options: [
+        { value: "All", label: "All Savings" },
         { value: "Monthly Contribution", label: "Monthly Contribution" },
         { value: "Additional Savings", label: "Additional Savings" },
-        { value: "Withdrawal", label: "Withdrawal" },
       ],
     },
     {
@@ -152,6 +155,7 @@ const AdminDashboard = () => {
       options: [
         { value: "Completed", label: "Completed" },
         { value: "Pending", label: "Pending" },
+        { value: "Failed", label: "Failed" },
       ],
     },
   ];
@@ -159,24 +163,27 @@ const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen">
       <main className="flex-1 overflow-y-auto">
+        <h1 className="text-3xl font-extrabold text-amber-700">
+          Staff Welfare Association Dashboard
+        </h1>
         <div className="py-6 px-8">
           {/* Payment Statistics */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {/* Total Savings Card */}
-            <div className="bg-white overflow-hidden rounded-lg shadow">
+            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <BanknotesIcon className="h-6 w-6 text-gray-400" />
+                    <BanknotesIcon className="h-12 w-12 text-primary-600 " />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Total Savings
+                      <dt className="text-sm text-amber-600 font-semibold font-geist">
+                        Total Savings Balance
                       </dt>
                       <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900">
-                          KES {totalSavingsAmount.toLocaleString()}
+                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
+                          $ {totalSavingsAmount.toLocaleString()}
                         </div>
                       </dd>
                     </dl>
@@ -186,20 +193,28 @@ const AdminDashboard = () => {
             </div>
 
             {/* Active Loans Card */}
-            <div className="bg-white overflow-hidden rounded-lg shadow">
+            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <DocumentTextIcon className="h-6 w-6 text-gray-400" />
+                    <DocumentTextIcon className="h-12 w-12 text-red-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm text-amber-600 font-semibold font-geist">
                         Active Loans
                       </dt>
                       <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900">
-                          {loans.length}
+                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
+                          {/* Display loans count and total amount */}
+                          {loans.length} -
+                          <span className="text-primary-500">
+                            {" "}
+                            ${" "}
+                            {loans
+                              .reduce((total, loan) => total + loan.amount, 0)
+                              .toLocaleString()}
+                          </span>
                         </div>
                       </dd>
                     </dl>
@@ -209,19 +224,19 @@ const AdminDashboard = () => {
             </div>
 
             {/* Total Members Card */}
-            <div className="bg-white overflow-hidden rounded-lg shadow">
+            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <UsersIcon className="h-6 w-6 text-gray-400" />
+                    <UsersIcon className="h-12 w-12 text-gray-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm text-amber-600 font-semibold font-geist">
                         Total Members
                       </dt>
                       <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900">
+                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
                           {totalMembers}
                         </div>
                       </dd>
@@ -232,20 +247,20 @@ const AdminDashboard = () => {
             </div>
 
             {/* Monthly Contributions Card */}
-            <div className="bg-white overflow-hidden rounded-lg shadow">
+            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <CalendarDaysIcon className="h-6 w-6 text-gray-400" />
+                    <CalendarDaysIcon className="h-12 w-12 text-blue-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm text-amber-600 font-semibold font-geist">
                         Monthly Contributions
                       </dt>
                       <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900">
-                          KES {monthlyContributions.toLocaleString()}
+                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
+                          $ {monthlyContributions.toLocaleString()}
                         </div>
                       </dd>
                     </dl>
@@ -257,7 +272,7 @@ const AdminDashboard = () => {
 
           {/* Recent Loans */}
           <div className="mt-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
+            <h2 className="text-xl font-bold font-nunito-sans text-primary-600 mb-4">
               Recent Loans
             </h2>
             <DataTable
@@ -270,7 +285,7 @@ const AdminDashboard = () => {
 
           {/* Members List */}
           <div className="mt-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
+            <h2 className="text-xl font-bold font-nunito-sans text-primary-600 mb-4">
               Welfare Members
             </h2>
             <DataTable
@@ -283,7 +298,7 @@ const AdminDashboard = () => {
 
           {/* Savings Accounts */}
           <div className="mt-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
+            <h2 className="text-xl font-bold font-nunito-sans text-primary-600 mb-4">
               Savings Accounts
             </h2>
             <DataTable

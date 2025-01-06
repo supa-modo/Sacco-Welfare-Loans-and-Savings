@@ -28,10 +28,12 @@ const LoanApplicationButton = () => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+        className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
       >
         <PlusIcon className="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" />
-        <span className="font-semibold">New Loan Application</span>
+        <span className="font-semibold text-[0.9rem]">
+          New Loan Application
+        </span>
       </button>
 
       {isOpen && <Modal onClose={() => setIsOpen(false)} />}
@@ -149,45 +151,46 @@ const Modal = ({ onClose }) => {
         <div className="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl transform transition-all">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="absolute right-4 top-4 p-2 rounded-full hover:bg-red-100 transition-colors"
           >
-            <XMarkIcon className="w-5 h-5 text-gray-500" />
+            <XMarkIcon className="w-5 h-5 text-red-500" />
           </button>
 
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-amber-700">
-              Loan Application
-            </h2>
-            <p className="mt-1 text-gray-500">
-              Complete the form below to apply for a loan
+          <div className="p-6 border-b border-gray-200 text-center">
+            <h1 className="text-2xl font-extrabold text-primary-600">
+              New Loan Application
+            </h1>
+
+            <p className="mt-1 text-gray-500 font-semibold font-nunito-sans">
+              Complete the form and steps below to apply for a loan
             </p>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 font-nunito-sans">
             <div className="mb-8 relative">
               <div className="flex justify-between">
                 {steps.map((s, idx) => (
                   <div
                     key={s.number}
-                    className="flex flex-col items-center relative z-10"
+                    className="flex flex-col items-center relative z-10 "
                   >
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors duration-300 ${
+                      className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors duration-300 ${
                         step >= s.number
-                          ? "bg-amber-500 text-white"
+                          ? "bg-primary-500 text-white"
                           : "bg-gray-200 text-gray-500"
                       }`}
                     >
                       {s.number}
                     </div>
-                    <span className="mt-2 text-sm font-medium text-gray-600">
+                    <span className="mt-2 text-sm font-semibold text-gray-600">
                       {s.title}
                     </span>
                   </div>
                 ))}
                 <div className="absolute top-5 left-0 h-0.5 bg-gray-200 w-full -z-10">
                   <div
-                    className="h-full bg-amber-500 transition-all duration-500"
+                    className="h-full bg-primary-500 transition-all duration-1000"
                     style={{ width: `${((step - 1) / 2) * 100}%` }}
                   />
                 </div>
@@ -198,12 +201,12 @@ const Modal = ({ onClose }) => {
               {step === 1 && (
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-bold text-gray-600">
                       Loan Amount
                     </label>
                     <div className="mt-1 relative rounded-lg shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+                        <CurrencyDollarIcon className="h-5 w-5 text-gray-500" />
                       </div>
                       <input
                         type="number"
@@ -214,7 +217,7 @@ const Modal = ({ onClose }) => {
                           errors.loanAmount
                             ? "border-red-500"
                             : "border-gray-300"
-                        } focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 h-10`}
+                        } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
                         placeholder="Enter loan amount"
                       />
                     </div>
@@ -226,8 +229,8 @@ const Modal = ({ onClose }) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Loan Term
+                    <label className="block text-sm font-bold text-gray-600">
+                      Loan Repayment Term
                     </label>
                     <div className="mt-1 relative rounded-lg shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -237,7 +240,7 @@ const Modal = ({ onClose }) => {
                         name="loanTerm"
                         value={formData.loanTerm}
                         onChange={handleInputChange}
-                        className="pl-10 w-full rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 h-10"
+                        className="pl-10 w-full rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11"
                       >
                         {[12, 24, 36, 48, 60].map((months) => (
                           <option key={months} value={months}>
@@ -249,7 +252,7 @@ const Modal = ({ onClose }) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-bold text-gray-600">
                       Purpose of Loan
                     </label>
                     <textarea
@@ -259,7 +262,7 @@ const Modal = ({ onClose }) => {
                       rows={4}
                       className={`mt-1 w-full rounded-lg border ${
                         errors.purpose ? "border-red-500" : "border-gray-300"
-                      } focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 p-2`}
+                      } focus:border-amber-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent p-2`}
                       placeholder="Describe the purpose of your loan"
                     />
                     {errors.purpose && (
