@@ -99,7 +99,7 @@ const Loans = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex pt-4 justify-between items-center">
         <h1 className="text-3xl font-extrabold text-amber-700">
           Welfare Loan Applications
         </h1>

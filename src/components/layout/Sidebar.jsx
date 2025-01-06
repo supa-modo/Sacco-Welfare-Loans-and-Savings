@@ -57,7 +57,7 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
       <div className="h-20 flex items-center justify-center relative">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`absolute -right-3 top-14 bg-primary text-white rounded-md p-1 hover:bg-primary-dark transition-colors duration-200 ${
+          className={`absolute -right-3 top-0 bg-primary text-white rounded-md p-1 hover:bg-primary-dark transition-colors duration-200 ${
             darkMode ? "hover:bg-gray-600" : ""
           }`}
         >

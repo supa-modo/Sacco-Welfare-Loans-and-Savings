@@ -98,39 +98,6 @@
       "dueDate": "2025-02-15",
       "interestRate": 10,
       "remainingBalance": 0
-    },
-    {
-      "id": "L1010",
-      "memberName": "Patricia Martinez",
-      "amount": 45000,
-      "purpose": "Business Inventory",
-      "status": "Active",
-      "dateIssued": "2024-12-05",
-      "dueDate": "2025-12-05",
-      "interestRate": 12,
-      "remainingBalance": 42000
-    },
-    {
-      "id": "L1011",
-      "memberName": "Thomas Moore",
-      "amount": 55000,
-      "purpose": "Equipment Purchase",
-      "status": "Active",
-      "dateIssued": "2024-11-30",
-      "dueDate": "2025-11-30",
-      "interestRate": 12,
-      "remainingBalance": 51000
-    },
-    {
-      "id": "L1012",
-      "memberName": "Jennifer Lee",
-      "amount": 28000,
-      "purpose": "Education",
-      "status": "Active",
-      "dateIssued": "2024-12-10",
-      "dueDate": "2025-12-10",
-      "interestRate": 10,
-      "remainingBalance": 26500
     }
   ]
 }

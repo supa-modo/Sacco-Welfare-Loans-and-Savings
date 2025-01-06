@@ -31,7 +31,7 @@ const Reports = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex pt-4 justify-between items-center">
         <h1 className="text-3xl font-extrabold text-amber-700 ">
           Financial System Reports
         </h1>

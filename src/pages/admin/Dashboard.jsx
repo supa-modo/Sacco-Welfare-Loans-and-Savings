@@ -38,7 +38,7 @@ const AdminDashboard = () => {
   const loanColumns = [
     { key: "id", header: "Loan ID" },
     { key: "memberName", header: "Member Name" },
-    { key: "amount", header: "Amount", render: (item) => `₹ ${item.amount}` },
+    { key: "amount", header: "Amount", render: (item) => `$ ${item.amount}` },
     { key: "purpose", header: "Purpose" },
     { key: "dateIssued", header: "Date Issued" },
     { key: "dueDate", header: "Due Date" },
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
     {
       key: "savingsBalance",
       header: "Total Savings",
-      render: (item) => `₹ ${item.savingsBalance}`,
+      render: (item) => `$ ${item.savingsBalance}`,
     },
   ];
 
@@ -119,7 +119,7 @@ const AdminDashboard = () => {
   const savingsColumns = [
     { key: "memberId", header: "Member ID" },
     { key: "memberName", header: "Name" },
-    { key: "amount", header: "Amount", render: (item) => `₹ ${item.amount}` },
+    { key: "amount", header: "Amount", render: (item) => `$ ${item.amount}` },
     { key: "date", header: "Date" },
     { key: "type", header: "Type" },
     {
@@ -162,7 +162,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex min-h-screen">
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 pt-4 overflow-y-auto">
         <h1 className="text-3xl font-extrabold text-amber-700">
           Staff Welfare Association Dashboard
         </h1>

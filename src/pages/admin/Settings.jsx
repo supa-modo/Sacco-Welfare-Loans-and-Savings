@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import CardSection from "../../components/common/CardSection";
 
 import {
   ChartBarIcon,
@@ -26,13 +27,12 @@ const Settings = () => {
   });
 
   const [loanSettings, setLoanSettings] = useState({
-    maxLoanAmount: 50000,
-    minCreditScore: 650,
+    maximumLoanAmount: 50000,
+    minimumCreditScore: 650,
     interestRate: 12,
-    maxTerm: 36,
-    autoPayments: true,
+    maximumRepaymentTerm: 36,
     latePaymentGracePeriod: 5,
-    earlyPaymentDiscount: 2,
+    autoPayments: true,
   });
 
   const [savingsSettings, setSavingsSettings] = useState({
@@ -44,7 +44,7 @@ const Settings = () => {
   });
 
   const [systemSettings, setSystemSettings] = useState({
-    maintenanceMode: false,
+    systemMaintenanceMode: false,
     debugMode: false,
     backupFrequency: "daily",
     retentionDays: 30,
@@ -62,70 +62,66 @@ const Settings = () => {
     { name: "Documents", icon: DocumentTextIcon },
   ];
 
+  const systemStatusCards = [
+    {
+      title: "System Version",
+      value: "2.1.0",
+      bgColor: "text-amber-600",
+      icon: <CogIcon className="h-12 w-12 text-primary-500" />,
+    },
+    {
+      title: "Active System Users",
+      value: "2,547",
+      bgColor: "text-blue-500",
+      icon: <UserGroupIcon className="h-10 w-10 text-blue-500" />,
+    },
+    {
+      title: "Last Updated",
+      value: "2h ago",
+      bgColor: "text-purple-500",
+      icon: <CalendarIcon className="h-9 w-9 text-purple-500" />,
+    },
+  ];
+  const loanTabCards = [
+    {
+      title: "Total Active Loans",
+      value: "147",
+      bgColor: "text-amber-600",
+      icon: <BanknotesIcon className="h-12 w-12 text-primary-600" />,
+    },
+    {
+      title: "Total Portfolio Amount",
+      value: "$1.2M",
+      bgColor: "text-blue-500",
+      icon: <CreditCardIcon className="h-12 w-12 text-blue-500" />,
+    },
+    {
+      title: "Average Interest Rate",
+      value: `${loanSettings.interestRate}%`,
+      bgColor: "text-yellow-600",
+      icon: <ChartBarIcon className="h-9 w-9 text-yellow-600" />,
+    },
+  ];
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "General":
         return (
           <div className="space-y-8">
-            <div className="bg-gradient-to-r from-gray-100 to-primary-50 rounded-xl p-6 pb-10">
-              <h3 className="text-xl font-extrabold text-primary-600 mb-4">
-                System Status
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white py-5 px-8 rounded-xl border border-gray-300">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-amber-600 font-bold font-nunito-sans">System Version</p>
-                      <p className="text-2xl font-bold font-nunito-sans text-gray-700 mt-1">
-                        2.1.0
-                      </p>
-                    </div>
-                    <div className="h-12 w-12 bg-green-200 rounded-full flex items-center justify-center">
-                      <CogIcon className="h-12 w-12 text-primary-500" />
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white py-5 px-8 rounded-xl border border-gray-300">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-amber-600 font-bold font-nunito-sans">Active Users</p>
-                      <p className="text-2xl font-bold font-nunito-sans text-gray-700 mt-1">
-                        2,547
-                      </p>
-                    </div>
-                    <div className="h-12 w-12 bg-blue-200 rounded-full flex items-center justify-center">
-                      <UserGroupIcon className="h-10 w-10 text-blue-500" />
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white py-5 px-8 rounded-xl border border-gray-300">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-amber-600 font-bold font-nunito-sans">Last Updated</p>
-                      <p className="text-2xl font-bold font-nunito-sans text-gray-700 mt-1">
-                        2h ago
-                      </p>
-                    </div>
-                    <div className="h-12 w-12 bg-purple-200 rounded-full flex items-center justify-center">
-                      <CalendarIcon className="h-9 w-9 text-purple-500" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CardSection title="System Status" cards={systemStatusCards} />
 
             <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              <h3 className="text-xl font-nunito-sans font-extrabold text-primary-600 mb-4">
                 System Preferences
               </h3>
-              <div className="space-y-6">
+              <div className="space-y-6 px-8">
                 {Object.entries(systemSettings).map(([key, value]) => (
                   <div
                     key={key}
-                    className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+                    className="flex items-center justify-between py-3 border-b border-gray-200/70 last:border-0"
                   >
                     <div>
-                      <p className="text-sm font-medium text-gray-900 capitalize">
+                      <p className="font-semibold font-sans text-gray-700 capitalize">
                         {key.replace(/([A-Z])/g, " $1").trim()}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
@@ -143,7 +139,7 @@ const Settings = () => {
                           }))
                         }
                         className={`${
-                          value ? "bg-blue-600" : "bg-gray-200"
+                          value ? "bg-primary-500" : "bg-gray-200"
                         } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out`}
                       >
                         <span
@@ -165,59 +161,16 @@ const Settings = () => {
       case "Loans":
         return (
           <div className="space-y-8">
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Loan Overview
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">Active Loans</p>
-                      <p className="text-lg font-semibold text-gray-900">147</p>
-                    </div>
-                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <BanknotesIcon className="h-5 w-5 text-green-600" />
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">Total Portfolio</p>
-                      <p className="text-lg font-semibold text-gray-900">
-                        $1.2M
-                      </p>
-                    </div>
-                    <div className="h-8 w-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                      <CreditCardIcon className="h-5 w-5 text-emerald-600" />
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">Avg Interest Rate</p>
-                      <p className="text-lg font-semibold text-gray-900">
-                        {loanSettings.interestRate}%
-                      </p>
-                    </div>
-                    <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <ChartBarIcon className="h-5 w-5 text-yellow-600" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CardSection title="Loans Overview" cards={loanTabCards} />
 
             <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              <h3 className="text-xl font-nunito-sans font-extrabold text-primary-600 mb-4">
                 Loan Parameters
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Object.entries(loanSettings).map(([key, value]) => (
                   <div key={key} className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 capitalize">
+                    <label className="block font-bold font-nunito-sans text-gray-500 capitalize">
                       {key.replace(/([A-Z])/g, " $1").trim()}
                     </label>
                     {typeof value === "boolean" ? (
@@ -229,7 +182,7 @@ const Settings = () => {
                           }))
                         }
                         className={`${
-                          value ? "bg-blue-600" : "bg-gray-200"
+                          value ? "bg-primary-500" : "bg-gray-200"
                         } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out`}
                       >
                         <span
@@ -248,7 +201,7 @@ const Settings = () => {
                             [key]: Number(e.target.value),
                           }))
                         }
-                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        className="block w-full rounded-lg border border-gray-300 py-2 px-4 font-bold text-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     )}
                   </div>
@@ -261,17 +214,17 @@ const Settings = () => {
       case "Savings":
         return (
           <div className="space-y-8">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className="bg-gradient-to-r from-gray-100 to-primary-50 rounded-xl p-8">
+            <h3 className="text-xl font-nunito-sans font-extrabold text-primary-600 mb-4">
                 Savings Goals
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Object.entries(savingsSettings).map(([key, value]) => (
                   <div
                     key={key}
-                    className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                    className="bg-gradient-to-br from-amber-50 via-gray-100 to-white py-5 px-8 rounded-xl border border-gray-300 p-4 shadow-md transition-shadow"
                   >
-                    <label className="block text-sm font-medium text-gray-700 capitalize mb-2">
+                    <label className="block text-[0.9rem] font-bold font-nunito-sans text-gray-600 capitalize mb-2">
                       {key.replace(/([A-Z])/g, " $1").trim()}
                     </label>
                     {typeof value === "boolean" ? (
@@ -283,8 +236,8 @@ const Settings = () => {
                           }))
                         }
                         className={`${
-                          value ? "bg-blue-600" : "bg-gray-200"
-                        } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out`}
+                          value ? "bg-primary-500" : "bg-gray-300"
+                        } relative inline-flex h-6 w-11 mt-2 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out`}
                       >
                         <span
                           className={`${
@@ -302,7 +255,7 @@ const Settings = () => {
                             [key]: e.target.value,
                           }))
                         }
-                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        className="block w-full rounded-lg border border-gray-300 py-2 mb-2 px-4 font-bold text-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     )}
                   </div>
