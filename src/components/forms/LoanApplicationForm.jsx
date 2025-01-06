@@ -8,7 +8,9 @@ import {
   ArrowRightIcon,
   ArrowLeftIcon,
   XMarkIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
+import members from "../../data/members.json";
 
 const LoanApplicationButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +46,8 @@ const LoanApplicationButton = () => {
 const Modal = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    memberId: "",
+    memberName: "",
     loanAmount: "",
     loanTerm: "12",
     purpose: "",
@@ -52,6 +56,34 @@ const Modal = ({ onClose }) => {
     idDocument: null,
   });
   const [errors, setErrors] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredMembers, setFilteredMembers] = useState([]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = members.members.filter(
+        (member) =>
+          member.status === "Active" &&
+          member.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredMembers(filtered);
+      setShowSuggestions(true);
+    } else {
+      setFilteredMembers([]);
+      setShowSuggestions(false);
+    }
+  }, [searchTerm]);
+
+  const selectMember = (member) => {
+    setFormData({
+      ...formData,
+      memberId: member.id,
+      memberName: member.name,
+    });
+    setSearchTerm(member.name);
+    setShowSuggestions(false);
+  };
 
   const steps = [
     { number: 1, title: "Loan Details" },
@@ -80,12 +112,15 @@ const Modal = ({ onClose }) => {
     const newErrors = {};
 
     if (step === 1) {
+      if (!formData.memberId) {
+        newErrors.memberId = "Please select a member";
+      }
       if (!formData.loanAmount) {
         newErrors.loanAmount = "Loan amount is required";
-      } else if (formData.loanAmount < 10000) {
-        newErrors.loanAmount = "Minimum loan amount is KES 10,000";
-      } else if (formData.loanAmount > 1000000) {
-        newErrors.loanAmount = "Maximum loan amount is KES 1,000,000";
+      } else if (formData.loanAmount < 500) {
+        newErrors.loanAmount = "Minimum loan amount is $ 10,000";
+      } else if (formData.loanAmount > 10000) {
+        newErrors.loanAmount = "Maximum loan amount is $ 1,000,000";
       }
 
       if (!formData.purpose) {
@@ -166,7 +201,7 @@ const Modal = ({ onClose }) => {
             </p>
           </div>
 
-          <div className="p-6 font-nunito-sans">
+          <div className="py-8 px-10 font-nunito-sans">
             <div className="mb-8 relative">
               <div className="flex justify-between">
                 {steps.map((s, idx) => (
@@ -200,12 +235,53 @@ const Modal = ({ onClose }) => {
             <div className="space-y-6">
               {step === 1 && (
                 <div className="space-y-6">
+                  {/* Member Selection */}
+                  <div className="relative">
+                    <label className="block text-sm font-bold text-gray-600">
+                      Enter Loan Applicant from Welfare's Members
+                    </label>
+                    <div className="mt-1 relative rounded-lg shadow-sm">
+                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                        <UserIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={`pl-14 w-full font-bold text-primary-600 rounded-lg border ${
+                          errors.memberId ? "border-red-500" : "border-gray-300"
+                        } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                        placeholder="Search member by name"
+                      />
+                    </div>
+                    {showSuggestions && filteredMembers.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
+                        {filteredMembers.map((member) => (
+                          <div
+                            key={member.id}
+                            onClick={() => selectMember(member)}
+                            className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
+                          >
+                            <div className="font-bold">{member.name}</div>
+                            <div className="text-sm font-semibold text-gray-500">
+                              ID: {member.id}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {errors.memberId && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.memberId}
+                      </p>
+                    )}
+                  </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-600">
                       Loan Amount
                     </label>
                     <div className="mt-1 relative rounded-lg shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
                         <CurrencyDollarIcon className="h-5 w-5 text-gray-500" />
                       </div>
                       <input
@@ -213,7 +289,7 @@ const Modal = ({ onClose }) => {
                         name="loanAmount"
                         value={formData.loanAmount}
                         onChange={handleInputChange}
-                        className={`pl-10 w-full rounded-lg border ${
+                        className={`pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border ${
                           errors.loanAmount
                             ? "border-red-500"
                             : "border-gray-300"
@@ -233,16 +309,16 @@ const Modal = ({ onClose }) => {
                       Loan Repayment Term
                     </label>
                     <div className="mt-1 relative rounded-lg shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
                         <CalendarIcon className="h-5 w-5 text-gray-400" />
                       </div>
                       <select
                         name="loanTerm"
                         value={formData.loanTerm}
                         onChange={handleInputChange}
-                        className="pl-10 w-full rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11"
+                        className="pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11"
                       >
-                        {[12, 24, 36, 48, 60].map((months) => (
+                        {[6, 12, 24, 36, 48, 60].map((months) => (
                           <option key={months} value={months}>
                             {months} months
                           </option>
@@ -260,7 +336,7 @@ const Modal = ({ onClose }) => {
                       value={formData.purpose}
                       onChange={handleInputChange}
                       rows={4}
-                      className={`mt-1 w-full rounded-lg border ${
+                      className={`mt-1 font-sans font-semibold text-gray-500 w-full rounded-lg border ${
                         errors.purpose ? "border-red-500" : "border-gray-300"
                       } focus:border-amber-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent p-2`}
                       placeholder="Describe the purpose of your loan"
@@ -272,33 +348,33 @@ const Modal = ({ onClose }) => {
                     )}
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">
+                  <div className="bg-gray-50 rounded-lg px-24">
+                    <h3 className=" font-bold text-amber-700 mb-3 text-center">
                       Loan Summary
                     </h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm font-semibold text-gray-500">
                           Monthly Payment:
                         </span>
-                        <span className="text-sm font-medium text-gray-900">
-                          KES {calculateMonthlyPayment()}
+                        <span className="text-sm font-bold text-gray-900">
+                          $ {calculateMonthlyPayment()}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm font-semibold text-gray-500">
                           Interest Rate:
                         </span>
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-bold text-gray-900">
                           15% p.a.
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm font-semibold text-gray-500">
                           Total Repayment:
                         </span>
-                        <span className="text-sm font-medium text-gray-900">
-                          KES{" "}
+                        <span className="text-sm font-bold text-gray-900">
+                          ${" "}
                           {(
                             calculateMonthlyPayment() * formData.loanTerm
                           ).toFixed(2)}
@@ -311,9 +387,12 @@ const Modal = ({ onClose }) => {
 
               {step === 2 && (
                 <div className="space-y-6">
+                  <h3 className=" font-bold text-center text-primary-700 mb-4">
+                    Supporting Documents Upload
+                  </h3>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Pay Slip
+                    <label className="block text-[0.94rem] font-bold text-amber-700">
+                      Upload your Pay Slip
                     </label>
                     <input
                       type="file"
@@ -321,7 +400,7 @@ const Modal = ({ onClose }) => {
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
                         errors.paySlip ? "border-red-500" : "border-gray-300"
-                      } focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 p-2`}
+                      } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf,.doc,.docx"
                     />
                     {errors.paySlip && (
@@ -332,7 +411,7 @@ const Modal = ({ onClose }) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-[0.94rem] font-bold text-amber-700">
                       Bank Statements (Last 6 months)
                     </label>
                     <input
@@ -343,7 +422,7 @@ const Modal = ({ onClose }) => {
                         errors.bankStatements
                           ? "border-red-500"
                           : "border-gray-300"
-                      } focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 p-2`}
+                      } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf"
                       multiple
                     />
@@ -355,8 +434,8 @@ const Modal = ({ onClose }) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      ID Document
+                    <label className="block text-[0.94rem] font-bold text-amber-700">
+                      ID / Passport Document
                     </label>
                     <input
                       type="file"
@@ -364,7 +443,7 @@ const Modal = ({ onClose }) => {
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
                         errors.idDocument ? "border-red-500" : "border-gray-300"
-                      } focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 p-2`}
+                      } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf,.jpg,.jpeg,.png"
                     />
                     {errors.idDocument && (
@@ -378,13 +457,35 @@ const Modal = ({ onClose }) => {
 
               {step === 3 && (
                 <div className="space-y-6">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-gray-900 mb-4">
-                      Application Summary
+                  <div className="bg-gray-50 rounded-lg px-4">
+                    <h3 className="font-bold text-center text-primary-700 border-b pb-2 mx-[10%] mb-4">
+                      Loan Application Summary
                     </h3>
                     <div className="space-y-4">
+                      {/* Member Information */}
                       <div>
-                        <h4 className="text-xs font-medium text-gray-500 uppercase">
+                        <h4 className="text-xs font-bold text-amber-700 uppercase">
+                          Loan Applicant Information
+                        </h4>
+                        <div className="mt-2 space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Applicant Full Name:</span>
+                            <span className="text-sm font-bold text-gray-600">
+                              {formData.memberName}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">
+                              Welfare Member ID Number:
+                            </span>
+                            <span className="text-sm font-bold text-gray-600">
+                              {formData.memberId}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-amber-700 uppercase">
                           Loan Details
                         </h4>
                         <div className="mt-2 space-y-2">
@@ -392,13 +493,15 @@ const Modal = ({ onClose }) => {
                             <span className="text-sm text-gray-500">
                               Amount:
                             </span>
-                            <span className="text-sm font-medium text-gray-900">
-                              KES {formData.loanAmount}
+                            <span className="text-sm font-bold text-gray-600">
+                              $ {formData.loanAmount}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-500">Term:</span>
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-sm text-gray-500">
+                              Repayment Term:
+                            </span>
+                            <span className="text-sm font-bold text-primary-600">
                               {formData.loanTerm} months
                             </span>
                           </div>
@@ -406,16 +509,16 @@ const Modal = ({ onClose }) => {
                             <span className="text-sm text-gray-500">
                               Monthly Payment:
                             </span>
-                            <span className="text-sm font-medium text-gray-900">
-                              KES {calculateMonthlyPayment()}
+                            <span className="text-sm font-bold text-gray-600">
+                              $ {calculateMonthlyPayment()}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-500">
-                              Total Repayment:
+                              Total Amount to be Repaid:
                             </span>
-                            <span className="text-sm font-medium text-gray-900">
-                              KES{" "}
+                            <span className="text-sm font-bold text-red-600">
+                              ${" "}
                               {(
                                 calculateMonthlyPayment() * formData.loanTerm
                               ).toFixed(2)}
@@ -425,38 +528,39 @@ const Modal = ({ onClose }) => {
                       </div>
 
                       <div>
-                        <h4 className="text-xs font-medium text-gray-500 uppercase">
+                        <h4 className="text-xs font-bold text-amber-700 uppercase">
                           Documents Provided
                         </h4>
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            Pay Slip
+                            Pay Slip - Payslip_document_name.pdf
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            Bank Statements
+                            Bank Statements - BankStatement_document_name.pdf
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            ID Document
+                            ID Document -
+                            IdentificationDocument_document_name.pdf
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-yellow-50 rounded-lg p-4">
+                  <div className="bg-amber-100 rounded-lg p-4">
                     <div className="flex">
-                      <InformationCircleIcon className="h-5 w-5 text-yellow-400 mr-2" />
+                      <InformationCircleIcon className="h-5 w-5 text-red-500 mr-2" />
                       <div>
-                        <h3 className="text-sm font-medium text-yellow-800">
+                        <h3 className="text-sm font-semibold text-yellow-800">
                           Important Notice
                         </h3>
-                        <p className="mt-2 text-sm text-yellow-700">
+                        <p className="mt-2 text-sm font-sans text-yellow-700">
                           By submitting this application, you confirm that all
                           provided information is true and accurate. False
-                          information may lead to automatic disqualification.
+                          information may lead to automatic rejection.
                         </p>
                       </div>
                     </div>
@@ -464,11 +568,11 @@ const Modal = ({ onClose }) => {
                 </div>
               )}
 
-              <div className="flex justify-between pt-6">
+              <div className="flex justify-between pt-6 ">
                 {step > 1 && (
                   <button
                     onClick={() => setStep(step - 1)}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    className="flex items-center font-semibold gap-2 px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
                   >
                     <ArrowLeftIcon className="w-4 h-4" />
                     Previous
@@ -477,7 +581,7 @@ const Modal = ({ onClose }) => {
                 {step < 3 ? (
                   <button
                     onClick={handleNext}
-                    className="flex items-center gap-2 ml-auto px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                    className="flex items-center font-semibold gap-2 ml-auto px-8 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
                   >
                     Next
                     <ArrowRightIcon className="w-4 h-4" />
@@ -485,7 +589,7 @@ const Modal = ({ onClose }) => {
                 ) : (
                   <button
                     onClick={handleSubmit}
-                    className="flex items-center gap-2 ml-auto px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                    className="flex items-center gap-2 font-semibold ml-auto px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
                   >
                     Submit Application
                     <ArrowRightIcon className="w-4 h-4" />
