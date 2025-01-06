@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import DataTable from "../../components/common/DataTable";
 import savingsData from "../../data/savings.json";
+import AddSavingsButton from "../../components/forms/SavingsDepositForm";
 
 const Savings = () => {
   const [savings, setSavings] = useState([]);
@@ -106,9 +107,7 @@ const Savings = () => {
         <h1 className="text-3xl font-extrabold text-amber-700">
           Member Savings Accounts
         </h1>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-          Record New Transaction
-        </button>
+        <AddSavingsButton />
       </div>
 
       {/* Stats Grid */}

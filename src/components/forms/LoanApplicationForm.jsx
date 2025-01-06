@@ -120,7 +120,7 @@ const Modal = ({ onClose }) => {
       } else if (formData.loanAmount < 500) {
         newErrors.loanAmount = "Minimum loan amount is $ 10,000";
       } else if (formData.loanAmount > 10000) {
-        newErrors.loanAmount = "Maximum loan amount is $ 1,000,000";
+        newErrors.loanAmount = "Maximum loan amount is $ 10,000";
       }
 
       if (!formData.purpose) {
@@ -178,7 +178,7 @@ const Modal = ({ onClose }) => {
       aria-modal="true"
     >
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
@@ -249,7 +249,7 @@ const Modal = ({ onClose }) => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={`pl-14 w-full font-bold text-primary-600 rounded-lg border ${
-                          errors.memberId ? "border-red-500" : "border-gray-300"
+                          errors.memberId ? "border-2 border-red-500" : "border-gray-300"
                         } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
                         placeholder="Search member by name"
                       />
@@ -276,7 +276,9 @@ const Modal = ({ onClose }) => {
                       </p>
                     )}
                   </div>
-                  <div>
+                  
+                  <div className="flex justify-between items-center space-x-8">
+                  <div className="w-full">
                     <label className="block text-sm font-bold text-gray-600">
                       Loan Amount
                     </label>
@@ -291,7 +293,7 @@ const Modal = ({ onClose }) => {
                         onChange={handleInputChange}
                         className={`pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border ${
                           errors.loanAmount
-                            ? "border-red-500"
+                            ? "border-2 border-red-500"
                             : "border-gray-300"
                         } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
                         placeholder="Enter loan amount"
@@ -304,7 +306,7 @@ const Modal = ({ onClose }) => {
                     )}
                   </div>
 
-                  <div>
+                  <div className="w-full">
                     <label className="block text-sm font-bold text-gray-600">
                       Loan Repayment Term
                     </label>
@@ -326,6 +328,7 @@ const Modal = ({ onClose }) => {
                       </select>
                     </div>
                   </div>
+                  </div>
 
                   <div>
                     <label className="block text-sm font-bold text-gray-600">
@@ -337,7 +340,7 @@ const Modal = ({ onClose }) => {
                       onChange={handleInputChange}
                       rows={4}
                       className={`mt-1 font-sans font-semibold text-gray-500 w-full rounded-lg border ${
-                        errors.purpose ? "border-red-500" : "border-gray-300"
+                        errors.purpose ? "border-2 border-red-500" : "border-gray-300"
                       } focus:border-amber-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent p-2`}
                       placeholder="Describe the purpose of your loan"
                     />
@@ -399,7 +402,7 @@ const Modal = ({ onClose }) => {
                       name="paySlip"
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
-                        errors.paySlip ? "border-red-500" : "border-gray-300"
+                        errors.paySlip ? "border-2 border-red-500" : "border-gray-300"
                       } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf,.doc,.docx"
                     />
@@ -420,7 +423,7 @@ const Modal = ({ onClose }) => {
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
                         errors.bankStatements
-                          ? "border-red-500"
+                          ? "border-2 border-red-500"
                           : "border-gray-300"
                       } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf"
@@ -442,7 +445,7 @@ const Modal = ({ onClose }) => {
                       name="idDocument"
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
-                        errors.idDocument ? "border-red-500" : "border-gray-300"
+                        errors.idDocument ? "border-2 border-red-500" : "border-gray-300"
                       } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf,.jpg,.jpeg,.png"
                     />
@@ -469,7 +472,9 @@ const Modal = ({ onClose }) => {
                         </h4>
                         <div className="mt-2 space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-500">Applicant Full Name:</span>
+                            <span className="text-sm text-gray-500">
+                              Applicant Full Name:
+                            </span>
                             <span className="text-sm font-bold text-gray-600">
                               {formData.memberName}
                             </span>
@@ -552,7 +557,7 @@ const Modal = ({ onClose }) => {
 
                   <div className="bg-amber-100 rounded-lg p-4">
                     <div className="flex">
-                      <InformationCircleIcon className="h-5 w-5 text-red-500 mr-2" />
+                      <InformationCircleIcon className="w-9 text-red-500 mr-2" />
                       <div>
                         <h3 className="text-sm font-semibold text-yellow-800">
                           Important Notice
