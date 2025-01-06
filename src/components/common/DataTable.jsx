@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { HiMiniArrowsUpDown } from "react-icons/hi2";
 import { IoMdClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { TbChevronLeft, TbChevronRight } from "react-icons/tb";
+import { TbChevronLeft, TbChevronRight, TbTrash } from "react-icons/tb";
 
 const DataTable = ({
   columns,
@@ -10,6 +10,7 @@ const DataTable = ({
   filters,
   searchPlaceholder = "Search...",
   defaultItemsPerPage = 10,
+  onDelete,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(defaultItemsPerPage);
@@ -42,6 +43,13 @@ const DataTable = ({
     }));
   };
 
+  // Handle delete
+  const handleDelete = (item) => {
+    if (onDelete) {
+      onDelete(item);
+    }
+  };
+
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
     let processedData = [...data];
@@ -60,7 +68,6 @@ const DataTable = ({
     // Apply filters
     Object.keys(activeFilters).forEach((key) => {
       if (activeFilters[key] && activeFilters[key] !== "All") {
-        // Skip filtering if value is "All"
         processedData = processedData.filter(
           (item) =>
             String(item[key]).toLowerCase() === activeFilters[key].toLowerCase()
@@ -93,12 +100,12 @@ const DataTable = ({
   };
 
   return (
-    <div className="  space-y-2">
+    <div className="space-y-2">
       {/* Header Section */}
       <div className="bg-white rounded-2xl flex items-center justify-between py-4 px-6 space-x-4">
         {/* Filters */}
         {filters && (
-          <div className="flex flex-wrap gap-2 ">
+          <div className="flex flex-wrap gap-2">
             {filters.map((filter) => (
               <div key={filter.key} className="flex flex-wrap gap-1">
                 {filter.options.map((option) => (
@@ -128,7 +135,6 @@ const DataTable = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={searchPlaceholder}
-            // className="w-full pl-14 pr-4 py-[0.65rem] border text-gray-500 input-field"
             className="w-full pl-14 pr-4 py-[0.65rem] text-gray-500 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
           {searchQuery && (
@@ -143,7 +149,7 @@ const DataTable = ({
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl  border-gray-300 overflow-hidden">
+      <div className="rounded-2xl border-gray-300 overflow-hidden">
         <table className="w-full">
           <thead className="border border-primary-500">
             <tr className="bg-primary-500">
@@ -162,6 +168,9 @@ const DataTable = ({
                   </div>
                 </th>
               ))}
+              <th className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -170,17 +179,26 @@ const DataTable = ({
                 key={item.id || index}
                 className="border-x border-gray-300 hover:bg-amber-100 transition-colors"
               >
-                <td className="px-6 py-4 text-sm border-b border-gray-200 text-gray-600">
+                <td className="px-6 py-2 text-sm border-b border-gray-200 text-gray-600">
                   {index + 1}.
                 </td>
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className="px-6 py-4 text-sm border-b border-gray-200 text-gray-600 "
+                    className="px-6 py-2 text-sm border-b border-gray-200 text-gray-600"
                   >
                     {column.render ? column.render(item) : item[column.key]}
                   </td>
                 ))}
+                <td className="px-6 py-2 text-sm border-b border-gray-200">
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                    title="Delete"
+                  >
+                    <TbTrash className="h-5 w-5" />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -188,7 +206,7 @@ const DataTable = ({
 
         {/* Pagination */}
         <div className="px-6 py-4 border-x border-b rounded-b-2xl border-gray-300 flex items-center justify-between">
-          <div className="flex items-center gap-4 ">
+          <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, filteredAndSortedData.length)} of{" "}
