@@ -67,47 +67,47 @@ const Settings = () => {
       case "General":
         return (
           <div className="space-y-8">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className="bg-gradient-to-r from-gray-100 to-primary-50 rounded-xl p-6 pb-10">
+              <h3 className="text-xl font-extrabold text-primary-600 mb-4">
                 System Status
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white py-5 px-8 rounded-xl border border-gray-300">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">System Version</p>
-                      <p className="text-lg font-semibold text-gray-900">
+                      <p className="text-sm text-amber-600 font-bold font-nunito-sans">System Version</p>
+                      <p className="text-2xl font-bold font-nunito-sans text-gray-700 mt-1">
                         2.1.0
                       </p>
                     </div>
-                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <CogIcon className="h-5 w-5 text-green-600" />
+                    <div className="h-12 w-12 bg-green-200 rounded-full flex items-center justify-center">
+                      <CogIcon className="h-12 w-12 text-primary-500" />
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white py-5 px-8 rounded-xl border border-gray-300">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">Active Users</p>
-                      <p className="text-lg font-semibold text-gray-900">
+                      <p className="text-sm text-amber-600 font-bold font-nunito-sans">Active Users</p>
+                      <p className="text-2xl font-bold font-nunito-sans text-gray-700 mt-1">
                         2,547
                       </p>
                     </div>
-                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <UserGroupIcon className="h-5 w-5 text-blue-600" />
+                    <div className="h-12 w-12 bg-blue-200 rounded-full flex items-center justify-center">
+                      <UserGroupIcon className="h-10 w-10 text-blue-500" />
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white py-5 px-8 rounded-xl border border-gray-300">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">Last Updated</p>
-                      <p className="text-lg font-semibold text-gray-900">
+                      <p className="text-sm text-amber-600 font-bold font-nunito-sans">Last Updated</p>
+                      <p className="text-2xl font-bold font-nunito-sans text-gray-700 mt-1">
                         2h ago
                       </p>
                     </div>
-                    <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-                      <CalendarIcon className="h-5 w-5 text-purple-600" />
+                    <div className="h-12 w-12 bg-purple-200 rounded-full flex items-center justify-center">
+                      <CalendarIcon className="h-9 w-9 text-purple-500" />
                     </div>
                   </div>
                 </div>
