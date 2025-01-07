@@ -4,7 +4,7 @@
       "memberDetails": {
         "memberId": "M1001",
         "memberName": "John Doe",
-        "currentBalance": 25000,
+        "currentSavingsBalance": 25000,
         "accountStatus": "Active",
         "dateJoined": "2024-01-01"
       },
@@ -71,7 +71,7 @@
       "memberDetails": {
         "memberId": "M1002",
         "memberName": "Jane Smith",
-        "currentBalance": 18000,
+        "currentSavingsBalance": 18000,
         "accountStatus": "Active",
         "dateJoined": "2024-02-01"
       },
@@ -114,7 +114,7 @@
       "memberDetails": {
         "memberId": "M1003",
         "memberName": "Jane Smith",
-        "currentBalance": 18000,
+        "currentSavingsBalance": 18000,
         "accountStatus": "Active",
         "dateJoined": "2024-02-01"
       },

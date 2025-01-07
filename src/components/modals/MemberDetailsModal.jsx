@@ -9,7 +9,7 @@ import { LiaUserEditSolid } from "react-icons/lia";
 const TabButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-6 py-2.5 font-nunito-sans font-bold text-sm rounded-lg transition-all ${
+    className={`px-8 py-2.5 font-nunito-sans font-bold text-sm rounded-lg transition-all ${
       active
         ? "bg-primary-500 text-white shadow-md"
         : "text-gray-600 hover:bg-primary-50 border border-gray-200"
@@ -20,7 +20,7 @@ const TabButton = ({ active, onClick, children }) => (
 );
 
 const StatCard = ({ title, value, className = "" }) => (
-  <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:border-primary-300 transition-colors">
+  <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl shadow-sm border border-gray-300 hover:border-primary-400 transition-colors">
     <h4 className="text-sm font-bold text-gray-500 mb-1">{title}</h4>
     <p className="text-2xl font-nunito-sans font-extrabold text-primary-500">
       {value}
@@ -114,7 +114,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
           <div className="bg-primary-500 pl-6 pr-2 py-4 sm:pl-8 flex justify-between items-center">
             <h3 className="text-xl font-semibold text-white font-nunito-sans">
               {memberData
-                ? `Member Information - ${memberData.name}`
+                ? `Welfare Member Information - ${memberData.name}`
                 : "Loading..."}
             </h3>
             <button
@@ -127,7 +127,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
 
           {/* Tabs */}
           <div className="border-b border-gray-200 bg-white/50">
-            <div className="px-6 sm:px-8 py-4 flex space-x-4">
+            <div className="px-6 sm:px-8 py-4 flex space-x-2">
               <TabButton
                 active={activeTab === "details"}
                 onClick={() => setActiveTab("details")}
@@ -192,7 +192,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                             onChange={(e) =>
                               handleInputChange(key, e.target.value)
                             }
-                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-nunito-sans"
+                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent font-nunito-sans"
                           />
                         ) : (
                           <p className="text-primary-500 font-nunito-sans font-bold">
@@ -231,7 +231,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
               <div className="space-y-6">
                 <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                   <h4 className="font-nunito-sans font-extrabold uppercase mb-4 text-amber-700">
-                    Loan Overview
+                    Loans Overview
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <StatCard title="Total Loans" value={totalLoans} />
@@ -250,7 +250,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                 <div className="shadow-sm overflow-hidden">
                   <div className="px-6 py-4 border-b border-gray-200">
                     <h4 className="font-nunito-sans font-extrabold uppercase text-amber-700">
-                      Loan History
+                      Loan Applications History
                     </h4>
                   </div>
                   <DataTable

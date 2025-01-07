@@ -137,7 +137,7 @@ const FinancialHistoryModal = ({ open, onClose, type = "loan", data, id }) => {
             <div>
             <div className="px-6 py-3 bg-white border-gray-300 flex justify-between items-center">
             <h4 className="font-nunito-sans font-extrabold uppercase text-amber-700">
-                  Transaction History
+                  Transactions History
                 </h4>
                 <button
                   onClick={handleDownload}
