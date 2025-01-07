@@ -8,9 +8,12 @@ import {
 import DataTable from "../../components/common/DataTable";
 import savingsData from "../../data/savings.json";
 import AddSavingsButton from "../../components/forms/SavingsDepositForm";
+import SavingsHistoryModal from "../../components/modals/SavingsHistoryModal";
 
 const Savings = () => {
   const [savings, setSavings] = useState([]);
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   useEffect(() => {
     setSavings(savingsData.savings || []);
@@ -52,31 +55,6 @@ const Savings = () => {
       trendUp: true,
       bgColor: "bg-blue-50",
       iconColor: "text-blue-500",
-    },
-  ];
-
-  const savingsColumns = [
-    { key: "id", header: "Transaction ID" },
-    { key: "memberName", header: "Member Name" },
-    { key: "amount", header: "Amount", render: (item) => `$ ${item.amount}` },
-    { key: "type", header: "Type" },
-    { key: "date", header: "Date" },
-    {
-      key: "status",
-      header: "Status",
-      render: (item) => (
-        <span
-          className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
-            item.status === "Completed"
-              ? "bg-primary-300 text-green-800"
-              : item.status === "Pending"
-              ? "bg-amber-200 text-yellow-800"
-              : "bg-red-400 text-red-800"
-          }`}
-        >
-          {item.status}
-        </span>
-      ),
     },
   ];
 
@@ -144,12 +122,35 @@ const Savings = () => {
       </div>
 
       {/* DataTable */}
-      <DataTable
-        columns={savingsColumns}
-        data={savings}
-        filters={savingsFilters}
-        searchPlaceholder="Search by member name or transaction ID..."
-      />
+      <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+        <DataTable
+          data={savings}
+          columns={[
+            { header: "Member ID", accessor: "memberId" },
+            { header: "Member Name", accessor: "memberName" },
+            { header: "Amount", accessor: "amount", render: (item) => `KES ${item.amount.toLocaleString()}` },
+            { header: "Date", accessor: "date", render: (item) => new Date(item.date).toLocaleDateString() },
+            { header: "Type", accessor: "type" },
+            { header: "Status", accessor: "status" }
+          ]}
+          onRowClick={(row) => {
+            setSelectedMemberId(row.memberId);
+            setIsHistoryModalOpen(true);
+          }}
+          filters={savingsFilters}
+          searchPlaceholder="Search by member name or transaction ID..."
+          onDelete={(item) => {
+            // Handle delete
+            console.log('Delete savings:', item.id);
+          }}
+        />
+
+        <SavingsHistoryModal
+          open={isHistoryModalOpen}
+          onClose={() => setIsHistoryModalOpen(false)}
+          memberId={selectedMemberId}
+        />
+      </div>
     </div>
   );
 };

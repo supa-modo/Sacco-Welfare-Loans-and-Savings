@@ -1,0 +1,66 @@
+{
+  "savingsHistory": {
+    "M001": {
+      "memberDetails": {
+        "memberId": "M001",
+        "memberName": "John Doe",
+        "currentBalance": 25000,
+        "accountStatus": "Active",
+        "dateJoined": "2024-01-01"
+      },
+      "transactions": [
+        {
+          "transactionNo": "TRX001",
+          "transactionDate": "2025-01-05",
+          "transactionType": "Deposit",
+          "amount": 5000,
+          "balanceAfter": 25000,
+          "notes": "Monthly contribution"
+        },
+        {
+          "transactionNo": "TRX002",
+          "transactionDate": "2024-12-05",
+          "transactionType": "Deposit",
+          "amount": 5000,
+          "balanceAfter": 20000,
+          "notes": "Monthly contribution"
+        },
+        {
+          "transactionNo": "TRX003",
+          "transactionDate": "2024-11-05",
+          "transactionType": "Withdrawal",
+          "amount": -2000,
+          "balanceAfter": 15000,
+          "notes": "Emergency withdrawal"
+        }
+      ]
+    },
+    "M002": {
+      "memberDetails": {
+        "memberId": "M002",
+        "memberName": "Jane Smith",
+        "currentBalance": 18000,
+        "accountStatus": "Active",
+        "dateJoined": "2024-02-01"
+      },
+      "transactions": [
+        {
+          "transactionNo": "TRX004",
+          "transactionDate": "2025-01-02",
+          "transactionType": "Deposit",
+          "amount": 3000,
+          "balanceAfter": 18000,
+          "notes": "Monthly contribution"
+        },
+        {
+          "transactionNo": "TRX005",
+          "transactionDate": "2024-12-02",
+          "transactionType": "Deposit",
+          "amount": 3000,
+          "balanceAfter": 15000,
+          "notes": "Monthly contribution"
+        }
+      ]
+    }
+  }
+}

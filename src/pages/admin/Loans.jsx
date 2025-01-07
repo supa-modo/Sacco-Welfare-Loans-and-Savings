@@ -8,9 +8,12 @@ import {
 import DataTable from "../../components/common/DataTable";
 import loansData from "../../data/loans.json";
 import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
+import LoanRepaymentModal from "../../components/modals/LoanRepaymentModal";
 
 const Loans = () => {
   const [loans, setLoans] = useState([]);
+  const [selectedLoanId, setSelectedLoanId] = useState(null);
+  const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState(false);
 
   useEffect(() => {
     setLoans(loansData.loans || []);
@@ -140,12 +143,35 @@ const Loans = () => {
       </div>
 
       {/* DataTable */}
-      <div className="">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
         <DataTable
-          columns={loanColumns}
           data={loans}
+          columns={[
+            { header: "Loan ID", accessor: "id" },
+            { header: "Member ID", accessor: "applicantMemberID" },
+            { header: "Member Name", accessor: "memberName" },
+            { header: "Amount", accessor: "amount", render: (item) => `KES ${item.amount.toLocaleString()}` },
+            { header: "Purpose", accessor: "purpose" },
+            { header: "Status", accessor: "status" },
+            { header: "Date Issued", accessor: "dateIssued", render: (item) => new Date(item.dateIssued).toLocaleDateString() },
+            { header: "Due Date", accessor: "dueDate", render: (item) => new Date(item.dueDate).toLocaleDateString() }
+          ]}
+          onRowClick={(row) => {
+            setSelectedLoanId(row.id);
+            setIsRepaymentModalOpen(true);
+          }}
           filters={loanFilters}
           searchPlaceholder="Search by member name or loan ID..."
+          onDelete={(item) => {
+            // Handle delete
+            console.log('Delete loan:', item.id);
+          }}
+        />
+
+        <LoanRepaymentModal
+          open={isRepaymentModalOpen}
+          onClose={() => setIsRepaymentModalOpen(false)}
+          loanId={selectedLoanId}
         />
       </div>
     </div>

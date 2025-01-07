@@ -11,6 +11,7 @@ const DataTable = ({
   searchPlaceholder = "Search...",
   defaultItemsPerPage = 10,
   onDelete,
+  onRowClick,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(defaultItemsPerPage);
@@ -58,7 +59,7 @@ const DataTable = ({
     if (searchQuery) {
       processedData = processedData.filter((item) =>
         columns.some((column) =>
-          String(item[column.key])
+          String(item[column.accessor || column.key])
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
         )
@@ -153,13 +154,13 @@ const DataTable = ({
         <table className="w-full">
           <thead className="border border-primary-500">
             <tr className="bg-primary-500">
-              <th className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider">
+              <th key="index" className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider">
                 #
               </th>
               {columns.map((column) => (
                 <th
-                  key={column.key}
-                  onClick={() => handleSort(column.key)}
+                  key={column.accessor || column.key}
+                  onClick={() => handleSort(column.accessor || column.key)}
                   className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider cursor-pointer select-none"
                 >
                   <div className="flex items-center gap-2">
@@ -168,7 +169,7 @@ const DataTable = ({
                   </div>
                 </th>
               ))}
-              <th className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider">
+              <th key="actions" className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -180,19 +181,23 @@ const DataTable = ({
                 className="border-x border-gray-300 hover:bg-amber-100 transition-colors"
               >
                 <td className="px-6 py-2 text-sm border-b border-gray-200 text-gray-600">
-                  {index + 1}.
+                  {startIndex + index + 1}.
                 </td>
                 {columns.map((column) => (
                   <td
-                    key={column.key}
-                    className="px-6 py-2 text-sm border-b border-gray-200 text-gray-600"
+                    key={column.accessor || column.key}
+                    onClick={() => onRowClick && onRowClick(item)}
+                    className="px-6 py-2 text-sm border-b border-gray-200 text-gray-600 cursor-pointer"
                   >
-                    {column.render ? column.render(item) : item[column.key]}
+                    {column.render ? column.render(item) : item[column.accessor || column.key]}
                   </td>
                 ))}
                 <td className="px-6 py-2 text-sm border-b border-gray-200">
                   <button
-                    onClick={() => handleDelete(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(item);
+                    }}
                     className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                     title="Delete"
                   >
