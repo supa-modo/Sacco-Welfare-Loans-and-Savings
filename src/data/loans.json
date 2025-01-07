@@ -2,7 +2,7 @@
   "loans": [
     {
       "id": "L1001",
-      "applicantMemberID": "M1001",
+      "applicantMemberID": "M1003",
       "memberName": "John Doe",
       "amount": 50000,
       "purpose": "Business Expansion",
@@ -54,7 +54,7 @@
     },
     {
       "id": "L1005",
-      "applicantMemberID": "M1001",
+      "applicantMemberID": "M1002",
       "memberName": "David Brown",
       "amount": 100000,
       "purpose": "Business Startup",
@@ -67,7 +67,7 @@
     },
     {
       "id": "L1006",
-      "applicantMemberID": "M1001",
+      "applicantMemberID": "M1002",
       "memberName": "Emily Davis",
       "amount": 40000,
       "purpose": "Vehicle Purchase",
@@ -80,7 +80,7 @@
     },
     {
       "id": "L1007",
-      "applicantMemberID": "M1001",
+      "applicantMemberID": "M1002",
       "memberName": "James Wilson",
       "amount": 20000,
       "purpose": "Wedding Expenses",
@@ -93,7 +93,7 @@
     },
     {
       "id": "L1008",
-      "applicantMemberID": "M1001",
+      "applicantMemberID": "M1003",
       "memberName": "Lisa Anderson",
       "amount": 60000,
       "purpose": "Debt Consolidation",
@@ -106,7 +106,7 @@
     },
     {
       "id": "L1009",
-      "applicantMemberID": "M1001",
+      "applicantMemberID": "M1003",
       "memberName": "Robert Taylor",
       "amount": 35000,
       "purpose": "Home Renovation",

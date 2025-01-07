@@ -8,12 +8,16 @@ import {
 import DataTable from "../../components/common/DataTable";
 import membersData from "../../data/members.json";
 import AddMemberButton from "../../components/forms/NewMemberForm";
+import MemberDetailsModal from "../../components/modals/MemberDetailsModal";
 
 const Members = () => {
   const [members, setMembers] = useState([]);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   useEffect(() => {
-    setMembers(membersData.members || []);
+    // Load members data
+    setMembers(membersData.members);
   }, []);
 
   const stats = [
@@ -92,17 +96,16 @@ const Members = () => {
   const memberFilters = [
     {
       key: "status",
-      label: "Filter by Status",
       options: [
-        { value: "All", label: "All Members" },
-        { value: "Active", label: "Active" },
-        { value: "Inactive", label: "Inactive" },
+        { label: "All", value: "all" },
+        { label: "Active", value: "Active" },
+        { label: "Inactive", value: "Inactive" },
       ],
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4">
       <div className="flex pt-4 justify-between items-center">
         <h1 className="text-3xl font-extrabold text-amber-700">
           Staff Welfare Members
@@ -118,7 +121,7 @@ const Members = () => {
             className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-6 rounded-xl border border-gray-300"
           >
             <div className="flex items-center justify-between">
-              <div>
+    <div>
                 <p className="text-sm text-amber-600 font-semibold font-geist">
                   {stat.title}
                 </p>
@@ -139,18 +142,56 @@ const Members = () => {
                 <stat.icon className={`${stat.iconColor}`} />
               </div>
             </div>
+            
           </div>
         ))}
       </div>
 
       {/* DataTable */}
+      <div className="pb-8 w-full max-w-9xl mx-auto">
+        <DataTable
+          data={members}
+          columns={[
+            { header: "Member ID", accessor: "id" },
+            { header: "Name", accessor: "name" },
+            { header: "Email", accessor: "email" },
+            { header: "Phone", accessor: "phone" },
+            {
+              header: "Join Date",
+              accessor: "joinDate",
+              render: (item) => new Date(item.joinDate).toLocaleDateString(),
+            },
+            { header: "Status", accessor: "status" },
+            {
+              header: "Savings Balance",
+              accessor: "savingsBalance",
+              render: (item) => `$ ${item.savingsBalance.toLocaleString()}`,
+            },
+            {
+              header: "Loans Balance",
+              accessor: "loansBalance",
+              render: (item) => `$ ${item.loansBalance.toLocaleString()}`,
+            },
+          ]}
+          onRowClick={(member) => {
+            setSelectedMember(member);
+            setIsDetailsModalOpen(true);
+          }}
+          filters={memberFilters}
+          searchPlaceholder="Search by name, email or ID..."
+          onDelete={(item) => {
+            // Handle delete
+            console.log("Delete member:", item.id);
+          }}
+        />
 
-      <DataTable
-        columns={memberColumns}
-        data={members}
-        filters={memberFilters}
-        searchPlaceholder="Search by name, email or ID..."
-      />
+        <MemberDetailsModal
+          open={isDetailsModalOpen}
+          onClose={() => setIsDetailsModalOpen(false)}
+          memberId={selectedMember?.id}
+          memberData={selectedMember}
+        />
+      </div>
     </div>
   );
 };

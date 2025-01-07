@@ -72,7 +72,7 @@ const FinancialHistoryModal = ({ open, onClose, type = "loan", data, id }) => {
           {/* Content */}
           <div className="bg-white px-6 pt-6 pb-8 sm:px-8">
             {/* Details Section */}
-            <div className="mb-8 bg-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm">
+            <div className="mb-6 bg-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm">
               <h4 className="font-nunito-sans font-extrabold uppercase mb-4 text-amber-700">
                 {type === "loan"
                   ? "Loan Application Details"
@@ -207,7 +207,7 @@ const FinancialHistoryModal = ({ open, onClose, type = "loan", data, id }) => {
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="px-3 py-1.5 bg-white border font-nunito-sans border-gray-300 rounded-lg text-sm text-gray-600 font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
                     {[10, 25, 50, 100].map((value) => (
                       <option key={value} value={value}>
