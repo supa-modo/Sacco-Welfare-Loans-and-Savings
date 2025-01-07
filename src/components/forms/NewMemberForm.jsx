@@ -11,6 +11,10 @@ import {
   InformationCircleIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
+import { GiOfficeChair } from "react-icons/gi";
+import { SiOnlyfans, SiOnlyoffice } from "react-icons/si";
+import { TbNumber } from "react-icons/tb";
+import { GoNumber } from "react-icons/go";
 
 const AddMemberButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -255,17 +259,20 @@ const AddMemberModal = ({ onClose }) => {
                   Official Job Title
                 </label>
                 <div className="mt-1 relative rounded-lg shadow-sm">
+                  <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                    <SiOnlyoffice className="h-5 w-5 text-gray-400" />
+                  </div>
                   <input
                     type="text"
                     name="jobTitle"
                     value={formData.jobTitle}
                     onChange={handleInputChange}
-                    className={`px-4 w-full font-semibold text-gray-600 rounded-lg border ${
+                    className={`pl-14 w-full font-semibold text-gray-600 rounded-lg border ${
                       errors.jobTitle
                         ? "border-2 border-red-500"
                         : "border-gray-300"
                     } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                    placeholder="Enter jobTitle"
+                    placeholder="New Member's Job Title"
                   />
                   {errors.jobTitle && (
                     <p className="mt-1 text-sm text-red-600">
@@ -293,7 +300,7 @@ const AddMemberModal = ({ onClose }) => {
                         ? "border-2 border-red-500"
                         : "border-gray-300"
                     } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                    placeholder="Your Staff PF No"
+                    placeholder="Member's Staff PF No"
                   />
                   {errors.identificationNumber && (
                     <p className="mt-1 text-sm text-red-600">

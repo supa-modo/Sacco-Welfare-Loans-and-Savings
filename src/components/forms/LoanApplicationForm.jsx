@@ -51,7 +51,7 @@ const Modal = ({ onClose }) => {
     loanAmount: "",
     loanTerm: "12",
     purpose: "",
-    paySlip: null,
+    employmentContract: null,
     bankStatements: null,
     idDocument: null,
   });
@@ -129,8 +129,8 @@ const Modal = ({ onClose }) => {
     }
 
     if (step === 2) {
-      if (!formData.paySlip) {
-        newErrors.paySlip = "Pay slip is required";
+      if (!formData.employmentContract) {
+        newErrors.employmentContract = "Pay slip is required";
       }
       if (!formData.bankStatements) {
         newErrors.bankStatements = "Bank statements are required";
@@ -395,20 +395,20 @@ const Modal = ({ onClose }) => {
                   </h3>
                   <div>
                     <label className="block text-[0.94rem] font-bold text-amber-700">
-                      Upload your Pay Slip
+                      Upload your Employment Contract / Letter
                     </label>
                     <input
                       type="file"
-                      name="paySlip"
+                      name="employmentContract"
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
-                        errors.paySlip ? "border-2 border-red-500" : "border-gray-300"
+                        errors.employmentContract ? "border-2 border-red-500" : "border-gray-300"
                       } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf,.doc,.docx"
                     />
-                    {errors.paySlip && (
+                    {errors.employmentContract && (
                       <p className="mt-1 text-sm text-red-600">
-                        {errors.paySlip}
+                        {errors.employmentContract}
                       </p>
                     )}
                   </div>
@@ -539,7 +539,7 @@ const Modal = ({ onClose }) => {
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            Pay Slip - Payslip_document_name.pdf
+                            Employment Letter / Contract - employmentContract_document_name.pdf
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />

@@ -29,7 +29,7 @@ const DashboardLayout = () => {
         <Sidebar darkMode={darkMode} toggleDarkMode={toggleDarkMode}  userRole={user?.role} />
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> */}
-          <main className={`flex-1 overflow-y-auto p-6 transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+          <main className={`flex-1 overflow-y-auto p-6 transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-amber-50/50 text-gray-900'}`}>
             <Outlet />
           </main>
         </div>

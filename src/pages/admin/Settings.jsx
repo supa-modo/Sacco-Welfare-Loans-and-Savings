@@ -215,7 +215,7 @@ const Settings = () => {
         return (
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-gray-100 to-primary-50 rounded-xl p-8">
-            <h3 className="text-xl font-nunito-sans font-extrabold text-primary-600 mb-4">
+              <h3 className="text-xl font-nunito-sans font-extrabold text-primary-600 mb-4">
                 Savings Goals
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -314,7 +314,7 @@ const Settings = () => {
 
       default:
         return (
-          <div className="flex items-center justify-center h-64">
+          <div className="flex justify-center min-h-[calc(100vh-19rem)]">
             <p className="text-gray-500">Coming soon...</p>
           </div>
         );
@@ -323,11 +323,11 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-4">
+      <div className="mx-auto px-4 py-4">
         <h1 className="text-3xl font-extrabold mb-8 text-amber-700">
           System Settings & Preferences
         </h1>
-        <div className="bg-gray-200 rounded-3xl shadow-sm overflow-hidden">
+        <div className="bg-gray-200 rounded-3xl shadow-md overflow-hidden pb-10">
           <div className="border-b border-gray-100">
             <div className="">
               <nav
@@ -356,7 +356,7 @@ const Settings = () => {
               </nav>
             </div>
           </div>
-          <div className="p-6">{renderTabContent()}</div>
+          <div className="px-8 pt-8">{renderTabContent()}</div>
         </div>
       </div>
     </div>

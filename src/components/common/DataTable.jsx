@@ -102,7 +102,7 @@ const DataTable = ({
   return (
     <div className="space-y-2">
       {/* Header Section */}
-      <div className="bg-white rounded-2xl flex items-center justify-between py-4 px-6 space-x-4">
+      <div className="bg-white shadow-md border-t border-gray-100 rounded-2xl flex items-center justify-between py-4 px-6 space-x-4">
         {/* Filters */}
         {filters && (
           <div className="flex flex-wrap gap-2">
@@ -112,7 +112,7 @@ const DataTable = ({
                   <button
                     key={option.value}
                     onClick={() => handleFilterClick(filter.key, option.value)}
-                    className={`px-6 py-2 text-sm shadow-md font-semibold font-nunito-sans rounded-lg transition-all
+                    className={`px-6 py-[0.55rem] text-sm shadow-md font-semibold font-nunito-sans rounded-lg transition-all
                       ${
                         activeFilters[filter.key] === option.value
                           ? "bg-primary-500 text-white"
