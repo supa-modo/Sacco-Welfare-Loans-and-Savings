@@ -8,7 +8,8 @@ import {
 import DataTable from "../../components/common/DataTable";
 import savingsData from "../../data/savings.json";
 import AddSavingsButton from "../../components/forms/SavingsDepositForm";
-import SavingsHistoryModal from "../../components/modals/SavingsHistoryModal";
+import savingsHistoryData from "../../data/savingsHistory.json";
+import FinancialHistoryModal from "../../components/modals/HistoryModal";
 
 const Savings = () => {
   const [savings, setSavings] = useState([]);
@@ -128,10 +129,18 @@ const Savings = () => {
           columns={[
             { header: "Member ID", accessor: "memberId" },
             { header: "Member Name", accessor: "memberName" },
-            { header: "Amount", accessor: "amount", render: (item) => `KES ${item.amount.toLocaleString()}` },
-            { header: "Date", accessor: "date", render: (item) => new Date(item.date).toLocaleDateString() },
+            {
+              header: "Amount",
+              accessor: "amount",
+              render: (item) => `KES ${item.amount.toLocaleString()}`,
+            },
+            {
+              header: "Date",
+              accessor: "date",
+              render: (item) => new Date(item.date).toLocaleDateString(),
+            },
             { header: "Type", accessor: "type" },
-            { header: "Status", accessor: "status" }
+            { header: "Status", accessor: "status" },
           ]}
           onRowClick={(row) => {
             setSelectedMemberId(row.memberId);
@@ -141,14 +150,16 @@ const Savings = () => {
           searchPlaceholder="Search by member name or transaction ID..."
           onDelete={(item) => {
             // Handle delete
-            console.log('Delete savings:', item.id);
+            console.log("Delete savings:", item.id);
           }}
         />
 
-        <SavingsHistoryModal
+        <FinancialHistoryModal
           open={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
-          memberId={selectedMemberId}
+          type="savings"
+          data={savingsHistoryData.savingsHistory[selectedMemberId]}
+          id={selectedMemberId}
         />
       </div>
     </div>

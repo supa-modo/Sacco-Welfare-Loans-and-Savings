@@ -9,6 +9,8 @@ import DataTable from "../../components/common/DataTable";
 import loansData from "../../data/loans.json";
 import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
 import LoanRepaymentModal from "../../components/modals/LoanRepaymentModal";
+import loanRepaymentsData from "../../data/loanRepayments.json";
+import FinancialHistoryModal from "../../components/modals/HistoryModal";
 
 const Loans = () => {
   const [loans, setLoans] = useState([]);
@@ -150,11 +152,23 @@ const Loans = () => {
             { header: "Loan ID", accessor: "id" },
             { header: "Member ID", accessor: "applicantMemberID" },
             { header: "Member Name", accessor: "memberName" },
-            { header: "Amount", accessor: "amount", render: (item) => `KES ${item.amount.toLocaleString()}` },
+            {
+              header: "Amount",
+              accessor: "amount",
+              render: (item) => `KES ${item.amount.toLocaleString()}`,
+            },
             { header: "Purpose", accessor: "purpose" },
             { header: "Status", accessor: "status" },
-            { header: "Date Issued", accessor: "dateIssued", render: (item) => new Date(item.dateIssued).toLocaleDateString() },
-            { header: "Due Date", accessor: "dueDate", render: (item) => new Date(item.dueDate).toLocaleDateString() }
+            {
+              header: "Date Issued",
+              accessor: "dateIssued",
+              render: (item) => new Date(item.dateIssued).toLocaleDateString(),
+            },
+            {
+              header: "Due Date",
+              accessor: "dueDate",
+              render: (item) => new Date(item.dueDate).toLocaleDateString(),
+            },
           ]}
           onRowClick={(row) => {
             setSelectedLoanId(row.id);
@@ -164,15 +178,19 @@ const Loans = () => {
           searchPlaceholder="Search by member name or loan ID..."
           onDelete={(item) => {
             // Handle delete
-            console.log('Delete loan:', item.id);
+            console.log("Delete loan:", item.id);
           }}
         />
 
-        <LoanRepaymentModal
+        <FinancialHistoryModal
           open={isRepaymentModalOpen}
           onClose={() => setIsRepaymentModalOpen(false)}
-          loanId={selectedLoanId}
+          type="loan"
+          data={loanRepaymentsData.loanRepayments[selectedLoanId]}
+          id={selectedLoanId}
         />
+
+        
       </div>
     </div>
   );
