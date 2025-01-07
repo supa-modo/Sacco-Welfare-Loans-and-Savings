@@ -25,6 +25,7 @@ import {
 } from "react-icons/hi2";
 import { MdOutlineDownload, MdOutlineDownloadDone } from "react-icons/md";
 import { FiLoader } from "react-icons/fi";
+import { RiFullscreenExitLine, RiFullscreenFill } from "react-icons/ri";
 
 const Reports = () => {
   const [selectedReport, setSelectedReport] = useState("savings");
@@ -307,12 +308,13 @@ const Reports = () => {
 
       {/* Report Preview */}
       <div className="bg-white  p-6 rounded-lg border border-gray-200 ">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-amber-700">
             Report Preview
           </h2>
-          <button className="text-primary hover:text-primary/80 text-sm font-bold font-nunito-sans transition-colors duration-200">
-            View Full Screen
+          <button className="text-primary border border-primary/40 py-2 px-8 rounded-lg flex items-center space-x-4 hover:text-primary/80 text-sm font-bold font-nunito-sans transition-colors duration-200">
+          <RiFullscreenFill size={18}/>
+            <span>View Full Screen</span>
           </button>
         </div>
 
