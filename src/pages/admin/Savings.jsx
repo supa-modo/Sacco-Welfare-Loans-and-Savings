@@ -132,7 +132,7 @@ const Savings = () => {
             {
               header: "Amount",
               accessor: "amount",
-              render: (item) => `KES ${item.amount.toLocaleString()}`,
+              render: (item) => `$ ${item.amount.toLocaleString()}`,
             },
             {
               header: "Date",

@@ -3,13 +3,7 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { HiMiniArrowsUpDown } from "react-icons/hi2";
 import { TbChevronLeft, TbChevronRight } from "react-icons/tb";
 
-const FinancialHistoryModal = ({
-  open,
-  onClose,
-  type = "loan", // 'loan' or 'savings'
-  data,
-  id,
-}) => {
+const FinancialHistoryModal = ({ open, onClose, type = "loan", data, id }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -56,14 +50,16 @@ const FinancialHistoryModal = ({
     >
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 transition-opacity" onClick={onClose}>
-          <div className="absolute inset-0 bg-gray-500/75 backdrop-blur-sm"></div>
+          <div className="absolute inset-0 bg-black/55 backdrop-blur-sm]"></div>
         </div>
 
-        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div className="inline-block align-bottom bg-white rounded-3xl pb-1 text-left overflow-hidden shadow-2xl transform transition-all sm:my-12 sm:align-middle md:max-w-7xl sm:w-full">
           {/* Header */}
-          <div className="bg-primary-500 px-6 py-4 sm:px-8 flex justify-between items-center">
+          <div className="bg-primary-500 pl-6 pr-2 py-4 sm:pl-8 flex justify-between items-center">
             <h3 className="text-xl font-semibold text-white">
-              {type === "loan" ? "Loan Repayment History" : "Savings History"}
+              {type === "loan"
+                ? "Loan Details & Repayment History"
+                : "Memeber Savings Details"}
             </h3>
             <button
               onClick={onClose}
@@ -77,25 +73,32 @@ const FinancialHistoryModal = ({
           <div className="bg-white px-6 pt-6 pb-8 sm:px-8">
             {/* Details Section */}
             <div className="mb-8 bg-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm">
-              <h4 className="text-lg font-semibold mb-4 text-gray-800">
-                {type === "loan" ? "Loan Details" : "Member Details"}
+              <h4 className="font-nunito-sans font-extrabold uppercase mb-4 text-amber-700">
+                {type === "loan"
+                  ? "Loan Application Details"
+                  : "Member Details"}
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {Object.entries(details).map(
                   ([key, value]) =>
                     key !== "remainingBalance" && (
                       <div key={key} className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-500 mb-1">
+                        <span className="text-sm font-bold text-gray-500 mb-1">
                           {key
                             .replace(/([A-Z])/g, " $1")
                             .replace(/^./, (str) => str.toUpperCase())}
                         </span>
-                        <span className="text-gray-900 font-semibold">
+                        <span className="text-primary-500 font-nunito-sans font-bold">
                           {typeof value === "number" &&
                           key.toLowerCase().includes("amount")
-                            ? `KES ${value.toLocaleString()}`
-                            : value instanceof Date
-                            ? value.toLocaleDateString()
+                            ? `$ ${value.toLocaleString()}`
+                            : typeof value === "string" &&
+                              !isNaN(Date.parse(value))
+                            ? new Date(value).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })
                             : value}
                         </span>
                       </div>
@@ -105,9 +108,9 @@ const FinancialHistoryModal = ({
 
               {/* Progress Bar for Loans */}
               {type === "loan" && (
-                <div className="mt-6 bg-white rounded-lg p-4 border border-gray-200">
+                <div className="mt-3 bg-white rounded-lg p-4 border border-gray-200">
                   <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-500">
+                    <span className="text-sm font-bold text-gray-500">
                       Repayment Progress
                     </span>
                     <span className="text-sm font-semibold text-primary-600">
@@ -122,8 +125,8 @@ const FinancialHistoryModal = ({
                   </div>
                   <div className="text-sm text-gray-500 mt-2">
                     Remaining Balance:{" "}
-                    <span className="font-semibold text-gray-700">
-                      KES {details.remainingBalance.toLocaleString()}
+                    <span className="font-bold text-red-500">
+                      USD {details.remainingBalance.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -131,20 +134,23 @@ const FinancialHistoryModal = ({
             </div>
 
             {/* Transaction History Section */}
-            <div className="rounded-xl border border-gray-300 overflow-hidden">
-              <div className="px-6 py-4 bg-white border-b border-gray-300 flex justify-between items-center">
-                <h4 className="text-lg font-semibold text-gray-800">
+            <div>
+            <div className="px-6 py-3 bg-white border-gray-300 flex justify-between items-center">
+            <h4 className="font-nunito-sans font-extrabold uppercase text-amber-700">
                   Transaction History
                 </h4>
                 <button
                   onClick={handleDownload}
-                  className="flex items-center px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors border border-primary-200"
+                  className="flex items-center px-4 py-[0.3rem] bg-primary-100 font-semibold text-primary-600 rounded-lg hover:bg-primary-100 transition-colors border border-gray-300"
                 >
                   <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                  Download History
+                  Download History Report
                 </button>
               </div>
 
+            </div>
+            <div className="rounded-xl border border-gray-300 overflow-hidden">
+              
               <table className="w-full">
                 <thead>
                   <tr className="bg-primary-500">
@@ -178,7 +184,7 @@ const FinancialHistoryModal = ({
                         >
                           {typeof value === "number" &&
                           key.toLowerCase().includes("amount")
-                            ? `KES ${Math.abs(value).toLocaleString()}`
+                            ? `$ ${Math.abs(value).toLocaleString()}`
                             : value}
                         </td>
                       ))}
@@ -201,7 +207,7 @@ const FinancialHistoryModal = ({
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-semibold shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
                     {[10, 25, 50, 100].map((value) => (
                       <option key={value} value={value}>

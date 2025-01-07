@@ -8,7 +8,6 @@ import {
 import DataTable from "../../components/common/DataTable";
 import loansData from "../../data/loans.json";
 import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
-import LoanRepaymentModal from "../../components/modals/LoanRepaymentModal";
 import loanRepaymentsData from "../../data/loanRepayments.json";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
 
@@ -145,7 +144,7 @@ const Loans = () => {
       </div>
 
       {/* DataTable */}
-      <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 pb-8 w-full max-w-9xl mx-auto">
         <DataTable
           data={loans}
           columns={[
@@ -155,7 +154,7 @@ const Loans = () => {
             {
               header: "Amount",
               accessor: "amount",
-              render: (item) => `KES ${item.amount.toLocaleString()}`,
+              render: (item) => `$ ${item.amount.toLocaleString()}`,
             },
             { header: "Purpose", accessor: "purpose" },
             { header: "Status", accessor: "status" },
@@ -189,8 +188,6 @@ const Loans = () => {
           data={loanRepaymentsData.loanRepayments[selectedLoanId]}
           id={selectedLoanId}
         />
-
-        
       </div>
     </div>
   );
