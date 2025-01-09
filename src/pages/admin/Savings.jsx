@@ -140,7 +140,19 @@ const Savings = () => {
               render: (item) => new Date(item.date).toLocaleDateString(),
             },
             { header: "Type", accessor: "type" },
-            { header: "Status", accessor: "status" },
+            { header: "Status", accessor: "status",  render: (item) => (
+              <span
+                className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
+                  item.status === "Completed"
+                    ? "bg-primary-300 text-green-800"
+                    : item.status === "Pending"
+                    ? "bg-amber-200 text-yellow-800"
+                    : "bg-red-400 text-red-800"
+                }`}
+              >
+                {item.status}
+              </span>
+            ), },
           ]}
           onRowClick={(row) => {
             setSelectedMemberId(row.memberId);

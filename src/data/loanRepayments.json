@@ -60,6 +60,110 @@
           "status": "Completed"
         }
       ]
+    },
+    "L1003": {
+      "loanDetails": {
+        "loanId": "L1002",
+        "memberId": "M1002",
+        "memberName": "Jane Smith",
+        "principalAmount": 25000,
+        "interestRate": 12,
+        "totalAmount": 28000,
+        "dateIssued": "2024-12-01",
+        "dueDate": "2025-12-01",
+        "purpose": "Education",
+        "status": "Active",
+        "remainingBalance": 22000
+      },
+      "repayments": [
+        {
+          "repaymentId": "REP003",
+          "date": "2025-01-02",
+          "amount": 3000,
+          "principalPaid": 2700,
+          "interestPaid": 300,
+          "balanceAfter": 22000,
+          "status": "Completed"
+        }
+      ]
+    },
+    "L1004": {
+      "loanDetails": {
+        "loanId": "L1002",
+        "memberId": "M1002",
+        "memberName": "Jane Smith",
+        "principalAmount": 25000,
+        "interestRate": 12,
+        "totalAmount": 28000,
+        "dateIssued": "2024-12-01",
+        "dueDate": "2025-12-01",
+        "purpose": "Education",
+        "status": "Active",
+        "remainingBalance": 22000
+      },
+      "repayments": [
+        {
+          "repaymentId": "REP003",
+          "date": "2025-01-02",
+          "amount": 3000,
+          "principalPaid": 2700,
+          "interestPaid": 300,
+          "balanceAfter": 22000,
+          "status": "Completed"
+        }
+      ]
+    },
+    "L1005": {
+      "loanDetails": {
+        "loanId": "L1005",
+        "memberId": "M1002",
+        "memberName": "Jane Smith",
+        "principalAmount": 25000,
+        "interestRate": 12,
+        "totalAmount": 28000,
+        "dateIssued": "2024-12-01",
+        "dueDate": "2025-12-01",
+        "purpose": "Education",
+        "status": "Active",
+        "remainingBalance": 22000
+      },
+      "repayments": [
+        {
+          "repaymentId": "REP003",
+          "date": "2025-01-02",
+          "amount": 3000,
+          "principalPaid": 2700,
+          "interestPaid": 300,
+          "balanceAfter": 22000,
+          "status": "Completed"
+        }
+      ]
+    },
+    "L1006": {
+      "loanDetails": {
+        "loanId": "L1006",
+        "memberId": "M1002",
+        "memberName": "Jane Smith",
+        "principalAmount": 25000,
+        "interestRate": 12,
+        "totalAmount": 28000,
+        "dateIssued": "2024-12-01",
+        "dueDate": "2025-12-01",
+        "purpose": "Education",
+        "status": "Active",
+        "remainingBalance": 22000
+      },
+      "repayments": [
+        {
+          "repaymentId": "REP003",
+          "date": "2025-01-02",
+          "amount": 3000,
+          "principalPaid": 2700,
+          "interestPaid": 300,
+          "balanceAfter": 22000,
+          "status": "Completed"
+        }
+      ]
     }
   }
 }

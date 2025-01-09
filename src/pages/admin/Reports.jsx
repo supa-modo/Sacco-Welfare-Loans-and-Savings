@@ -307,7 +307,7 @@ const Reports = () => {
       </div>
 
       {/* Report Preview */}
-      <div className="bg-white  p-6 rounded-lg border border-gray-200 ">
+      <div className="bg-white  p-6 rounded-xl border border-gray-200 ">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-amber-700">
             Report Preview

@@ -5,7 +5,7 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated()) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/logi" replace />;
   }
 
   return children;

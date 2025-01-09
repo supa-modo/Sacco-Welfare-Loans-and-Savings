@@ -121,7 +121,7 @@ const Members = () => {
             className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-6 rounded-xl border border-gray-300"
           >
             <div className="flex items-center justify-between">
-    <div>
+              <div>
                 <p className="text-sm text-amber-600 font-semibold font-geist">
                   {stat.title}
                 </p>
@@ -142,7 +142,6 @@ const Members = () => {
                 <stat.icon className={`${stat.iconColor}`} />
               </div>
             </div>
-            
           </div>
         ))}
       </div>
@@ -161,7 +160,7 @@ const Members = () => {
               accessor: "joinDate",
               render: (item) => new Date(item.joinDate).toLocaleDateString(),
             },
-            { header: "Status", accessor: "status" },
+
             {
               header: "Savings Balance",
               accessor: "savingsBalance",
@@ -171,6 +170,21 @@ const Members = () => {
               header: "Loans Balance",
               accessor: "loansBalance",
               render: (item) => `$ ${item.loansBalance.toLocaleString()}`,
+            },
+            {
+              header: "Status",
+              accessor: "status",
+              render: (item) => (
+                <span
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
+                    item.status === "Active"
+                      ? "bg-primary-300 text-green-800"
+                      : "bg-red-300 text-red-800"
+                  }`}
+                >
+                  {item.status}
+                </span>
+              ),
             },
           ]}
           onRowClick={(member) => {

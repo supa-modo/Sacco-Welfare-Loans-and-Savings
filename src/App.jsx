@@ -16,6 +16,9 @@ import Savings from "./pages/admin/Savings";
 import Members from "./pages/admin/Members";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
+import MemberLoans from "./pages/member/Loans";
+import MemberSavings from "./pages/member/Savings";
+import MemberSettings from "./pages/member/Profile";
 
 function App() {
   return (
@@ -53,6 +56,10 @@ function App() {
             }
           >
             <Route index element={<MemberDashboard />} />
+            <Route path="dashboard" element={<MemberDashboard />} />
+            <Route path="loans" element={<MemberLoans />} />
+            <Route path="savings" element={<MemberSavings />} />
+            <Route path="settings" element={<MemberSettings />} />
           </Route>
 
           {/* Catch all route */}

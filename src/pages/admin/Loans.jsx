@@ -157,7 +157,7 @@ const Loans = () => {
               render: (item) => `$ ${item.amount.toLocaleString()}`,
             },
             { header: "Purpose", accessor: "purpose" },
-            { header: "Status", accessor: "status" },
+
             {
               header: "Date Issued",
               accessor: "dateIssued",
@@ -167,6 +167,25 @@ const Loans = () => {
               header: "Due Date",
               accessor: "dueDate",
               render: (item) => new Date(item.dueDate).toLocaleDateString(),
+            },
+            {
+              header: "Status",
+              accessor: "status",
+              render: (item) => (
+                <span
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
+                    item.status === "Active"
+                      ? "bg-primary-300 text-green-800"
+                      : item.status === "Paid"
+                      ? "bg-blue-100 text-blue-800"
+                      : item.status === "Pending"
+                      ? "bg-amber-200 text-yellow-800"
+                      : "bg-red-400 text-red-800"
+                  }`}
+                >
+                  {item.status}
+                </span>
+              ),
             },
           ]}
           onRowClick={(row) => {
