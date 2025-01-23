@@ -6,24 +6,43 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import DataTable from "../../components/common/DataTable";
-import savingsData from "../../data/savings.json";
 import AddSavingsButton from "../../components/forms/SavingsDepositForm";
-import savingsHistoryData from "../../data/savingsHistory.json";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
 
 const Savings = () => {
   const [savings, setSavings] = useState([]);
   const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch savings data from the backend
   useEffect(() => {
-    setSavings(savingsData.savings || []);
+    const fetchSavings = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/savings");
+        if (!response.ok) {
+          throw new Error("Failed to fetch savings");
+        }
+        const data = await response.json();
+        setSavings(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSavings();
   }, []);
 
+  // Stats (you can update these dynamically based on fetched data)
   const stats = [
     {
       title: "Total Savings",
-      value: "$ 2,500,000",
+      value: `$ ${savings
+        .reduce((sum, saving) => sum + parseFloat(saving.amount), 0)
+        .toLocaleString()}`,
       icon: BanknotesIcon,
       trend: "+8.3%",
       trendUp: true,
@@ -32,7 +51,10 @@ const Savings = () => {
     },
     {
       title: "Monthly Contributions",
-      value: "$ 150,000",
+      value: `$ ${savings
+        .filter((saving) => saving.type === "Monthly Contribution")
+        .reduce((sum, saving) => sum + parseFloat(saving.amount), 0)
+        .toLocaleString()}`,
       icon: ArrowTrendingUpIcon,
       trend: "+5.2%",
       trendUp: true,
@@ -41,7 +63,10 @@ const Savings = () => {
     },
     {
       title: "Withdrawals",
-      value: "$ 50,000",
+      value: `$ ${savings
+        .filter((saving) => saving.type === "Withdrawal")
+        .reduce((sum, saving) => sum + parseFloat(saving.amount), 0)
+        .toLocaleString()}`,
       icon: ArrowTrendingDownIcon,
       trend: "-2.3%",
       trendUp: false,
@@ -79,6 +104,9 @@ const Savings = () => {
       ],
     },
   ];
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="space-y-6">
@@ -128,31 +156,29 @@ const Savings = () => {
           data={savings}
           columns={[
             { header: "Member ID", accessor: "memberId" },
-            { header: "Member Name", accessor: "memberName" },
             {
               header: "Amount",
               accessor: "amount",
               render: (item) => `$ ${item.amount.toLocaleString()}`,
             },
-            {
-              header: "Date",
-              accessor: "date",
-              render: (item) => new Date(item.date).toLocaleDateString(),
-            },
             { header: "Type", accessor: "type" },
-            { header: "Status", accessor: "status",  render: (item) => (
-              <span
-                className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
-                  item.status === "Completed"
-                    ? "bg-primary-300 text-green-800"
-                    : item.status === "Pending"
-                    ? "bg-amber-200 text-yellow-800"
-                    : "bg-red-400 text-red-800"
-                }`}
-              >
-                {item.status}
-              </span>
-            ), },
+            {
+              header: "Status",
+              accessor: "status",
+              render: (item) => (
+                <span
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
+                    item.status === "Completed"
+                      ? "bg-primary-300 text-green-800"
+                      : item.status === "Pending"
+                      ? "bg-amber-200 text-yellow-800"
+                      : "bg-red-400 text-red-800"
+                  }`}
+                >
+                  {item.status}
+                </span>
+              ),
+            },
           ]}
           onRowClick={(row) => {
             setSelectedMemberId(row.memberId);
@@ -170,7 +196,6 @@ const Savings = () => {
           open={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
           type="savings"
-          data={savingsHistoryData.savingsHistory[selectedMemberId]}
           id={selectedMemberId}
         />
       </div>

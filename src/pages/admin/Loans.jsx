@@ -6,24 +6,41 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import DataTable from "../../components/common/DataTable";
-import loansData from "../../data/loans.json";
 import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
-import loanRepaymentsData from "../../data/loanRepayments.json";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
 
 const Loans = () => {
   const [loans, setLoans] = useState([]);
   const [selectedLoanId, setSelectedLoanId] = useState(null);
   const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch loans data from the backend
   useEffect(() => {
-    setLoans(loansData.loans || []);
+    const fetchLoans = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/loans");
+        if (!response.ok) {
+          throw new Error("Failed to fetch loans");
+        }
+        const data = await response.json();
+        setLoans(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLoans();
   }, []);
 
+  // Stats (you can update these dynamically based on fetched data)
   const stats = [
     {
       title: "Active Loans",
-      value: "456",
+      value: loans.filter((loan) => loan.status === "Active").length,
       icon: BanknotesIcon,
       trend: "+12.5%",
       trendUp: true,
@@ -32,7 +49,7 @@ const Loans = () => {
     },
     {
       title: "Pending Approvals",
-      value: "23",
+      value: loans.filter((loan) => loan.status === "Pending").length,
       icon: DocumentTextIcon,
       trend: "-2.3%",
       trendUp: false,
@@ -41,7 +58,10 @@ const Loans = () => {
     },
     {
       title: "Due Repayments",
-      value: "$ 125,000",
+      value: `$ ${loans
+        .filter((loan) => loan.status === "Active")
+        .reduce((sum, loan) => sum + parseFloat(loan.remainingBalance), 0)
+        .toLocaleString()}`,
       icon: CalendarDaysIcon,
       trend: "+5.2%",
       trendUp: true,
@@ -50,7 +70,7 @@ const Loans = () => {
     },
     {
       title: "Overdue Loans",
-      value: "12",
+      value: loans.filter((loan) => loan.status === "Overdue").length,
       icon: ClockIcon,
       trend: "+1.2%",
       trendUp: false,
@@ -61,11 +81,19 @@ const Loans = () => {
 
   const loanColumns = [
     { key: "id", header: "Loan ID" },
-    { key: "memberName", header: "Member Name" },
+    { key: "memberId", header: "Member ID" },
     { key: "amount", header: "Amount", render: (item) => `$ ${item.amount}` },
     { key: "purpose", header: "Purpose" },
-    { key: "dateIssued", header: "Date Issued" },
-    { key: "dueDate", header: "Due Date" },
+    {
+      key: "dateIssued",
+      header: "Date Issued",
+      render: (item) => new Date(item.dateIssued).toLocaleDateString(),
+    },
+    {
+      key: "dueDate",
+      header: "Due Date",
+      render: (item) => new Date(item.dueDate).toLocaleDateString(),
+    },
     {
       key: "status",
       header: "Status",
@@ -100,6 +128,9 @@ const Loans = () => {
       ],
     },
   ];
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="space-y-8">
@@ -147,47 +178,7 @@ const Loans = () => {
       <div className="px-4 sm:px-6 lg:px-8 pb-8 w-full max-w-9xl mx-auto">
         <DataTable
           data={loans}
-          columns={[
-            { header: "Loan ID", accessor: "id" },
-            { header: "Member ID", accessor: "applicantMemberID" },
-            { header: "Member Name", accessor: "memberName" },
-            {
-              header: "Amount",
-              accessor: "amount",
-              render: (item) => `$ ${item.amount.toLocaleString()}`,
-            },
-            { header: "Purpose", accessor: "purpose" },
-
-            {
-              header: "Date Issued",
-              accessor: "dateIssued",
-              render: (item) => new Date(item.dateIssued).toLocaleDateString(),
-            },
-            {
-              header: "Due Date",
-              accessor: "dueDate",
-              render: (item) => new Date(item.dueDate).toLocaleDateString(),
-            },
-            {
-              header: "Status",
-              accessor: "status",
-              render: (item) => (
-                <span
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
-                    item.status === "Active"
-                      ? "bg-primary-300 text-green-800"
-                      : item.status === "Paid"
-                      ? "bg-blue-100 text-blue-800"
-                      : item.status === "Pending"
-                      ? "bg-amber-200 text-yellow-800"
-                      : "bg-red-400 text-red-800"
-                  }`}
-                >
-                  {item.status}
-                </span>
-              ),
-            },
-          ]}
+          columns={loanColumns}
           onRowClick={(row) => {
             setSelectedLoanId(row.id);
             setIsRepaymentModalOpen(true);
@@ -204,7 +195,6 @@ const Loans = () => {
           open={isRepaymentModalOpen}
           onClose={() => setIsRepaymentModalOpen(false)}
           type="loan"
-          data={loanRepaymentsData.loanRepayments[selectedLoanId]}
           id={selectedLoanId}
         />
       </div>

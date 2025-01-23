@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { HiMiniArrowsUpDown } from "react-icons/hi2";
 import DataTable from "../common/DataTable";
-import loansData from "../../data/loans.json";
-import savingsHistoryData from "../../data/savingsHistory.json";
 import { LiaUserEditSolid } from "react-icons/lia";
 
 const TabButton = ({ active, onClick, children }) => (
@@ -32,6 +30,46 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
+  const [loans, setLoans] = useState([]);
+  const [savings, setSavings] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch loans and savings data when the modal opens
+  useEffect(() => {
+    if (open && memberId) {
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          // Fetch loans
+          const loansResponse = await fetch(
+            `http://localhost:5000/api/loans/member/${memberId}`
+          );
+          if (!loansResponse.ok) {
+            throw new Error("Failed to fetch loans");
+          }
+          const loansData = await loansResponse.json();
+          setLoans(loansData);
+
+          // Fetch savings
+          const savingsResponse = await fetch(
+            `http://localhost:5000/api/savings/member/${memberId}`
+          );
+          if (!savingsResponse.ok) {
+            throw new Error("Failed to fetch savings");
+          }
+          const savingsData = await savingsResponse.json();
+          setSavings(savingsData);
+        } catch (error) {
+          setError(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+    }
+  }, [open, memberId]);
 
   useEffect(() => {
     if (memberData) {
@@ -41,32 +79,22 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
 
   if (!open) return null;
 
-  const memberLoans = memberId
-    ? loansData.loans.filter((loan) => loan.applicantMemberID === memberId)
-    : [];
-
-  const savingsHistory =
-    memberId && savingsHistoryData.savingsHistory
-      ? savingsHistoryData.savingsHistory[memberId]
-      : null;
-
-  // Calculate stats
-  const totalLoans = memberLoans.length;
-  const activeLoans = memberLoans.filter(
-    (loan) => loan.status === "Active"
-  ).length;
-  const totalLoanAmount = memberLoans.reduce(
-    (sum, loan) => sum + (loan.amount || 0),
+  // Calculate stats for loans
+  const totalLoans = loans.length;
+  const activeLoans = loans.filter((loan) => loan.status === "Active").length;
+  const totalLoanAmount = loans.reduce(
+    (sum, loan) => sum + parseFloat(loan.amount),
     0
   );
-  const remainingLoanBalance = memberLoans
+  const remainingLoanBalance = loans
     .filter((loan) => loan.status === "Active")
-    .reduce((sum, loan) => sum + (loan.remainingBalance || 0), 0);
+    .reduce((sum, loan) => sum + parseFloat(loan.remainingBalance), 0);
 
-  const savingsBalance = memberData?.savingsBalance || 0;
-  const lastContribution = memberData?.lastContribution;
+  // Calculate stats for savings
+  const savingsBalance = savings?.currentSavingsBalance || 0;
+  const lastContribution = savings?.transactions?.[0]?.transactionDate || null;
   const totalContributions =
-    savingsHistory?.transactions?.reduce(
+    savings?.transactions?.reduce(
       (sum, trans) =>
         sum + (trans.transactionType === "Deposit" ? trans.amount : 0),
       0
@@ -99,6 +127,9 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
         { key: "lastContribution", label: "Last Contribution" },
       ]
     : [];
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div
@@ -207,15 +238,6 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                                     day: "numeric",
                                   }
                                 )
-                              : key.includes("lastContribution")
-                              ? new Date(editedData[key]).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  }
-                                )
                               : editedData[key]}
                           </p>
                         )}
@@ -254,7 +276,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                     </h4>
                   </div>
                   <DataTable
-                    data={memberLoans}
+                    data={loans}
                     columns={[
                       { header: "Loan ID", accessor: "id" },
                       {
@@ -328,15 +350,15 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                   </div>
                 </div>
 
-                {savingsHistory?.transactions && (
-                  <div className=" shadow-sm overflow-hidden">
+                {savings?.transactions && (
+                  <div className="shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-200">
                       <h4 className="font-nunito-sans font-extrabold uppercase text-amber-700">
                         Transaction History
                       </h4>
                     </div>
                     <DataTable
-                      data={savingsHistory.transactions}
+                      data={savings.transactions}
                       columns={[
                         { header: "Transaction No", accessor: "transactionNo" },
                         {
