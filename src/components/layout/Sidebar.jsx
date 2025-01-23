@@ -17,6 +17,8 @@ import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const navigation = {
     admin: [
@@ -36,8 +38,6 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
   };
 
   const links = navigation[userRole] || [];
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -191,7 +191,7 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
                   <div className="flex items-center">
                     <UserIcon className="h-6 w-6 mr-2" />
                     <span className="text-[0.9rem] font-bold font-nunito-sans truncate w-24">
-                      John Doe Lorem Ipsum Kale
+                      {user?.member?.name || user?.userEmail || "User"}
                     </span>
                   </div>
                   <button
@@ -205,8 +205,12 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
                   </button>
                 </div>
               ) : (
-                <button className="w-full flex justify-center" title="Logout">
-                  <UserIcon className="h-6 w-6" />
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex justify-center"
+                  title="Logout"
+                >
+                  <MdOutlineLogout className="h-6 w-6" />
                 </button>
               )}
             </div>

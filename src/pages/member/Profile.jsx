@@ -84,8 +84,8 @@ const MemberSettings = () => {
 
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">
+        <div className="bg-gray-200 rounded-xl px-6 pb-14 pt-10">
+          <h3 className="text-xl font-nunito-sans font-bold text-amber-700 mb-6">
             {activeTab} Settings
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

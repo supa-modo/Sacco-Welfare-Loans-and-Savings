@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/AuthContext";
 import bgImage from "../../assets/sacco-bg.jpg";
@@ -13,21 +13,36 @@ import { GiPadlock } from "react-icons/gi";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [loginError, setLoginError] = useState("");
+
+  useEffect(() => {
+    // Show registration success message if available
+    if (location.state?.message) {
+      // You might want to add a success message component here
+      console.log(location.state.message);
+    }
+  }, [location]);
 
   const onSubmit = async (data) => {
     try {
+      setIsLoading(true);
+      setLoginError("");
+
       const result = await login(data.email, data.password);
+
       if (result.success) {
         // Navigate based on user role
-        if (result.role === "admin") {
+        if (result.role === "admin" || result.role === "superadmin") {
           navigate("/admin/dashboard");
         } else {
           navigate("/member");
@@ -37,6 +52,8 @@ const Login = () => {
       }
     } catch (error) {
       setLoginError("An error occurred during login");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -171,9 +188,36 @@ const Login = () => {
           <div>
             <button
               type="submit"
+              disabled={isLoading}
               className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
-              Sign in
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Signing in...
+                </span>
+              ) : (
+                "Sign in"
+              )}
             </button>
           </div>
 
@@ -187,11 +231,11 @@ const Login = () => {
                 Register here
               </Link>
             </p>
-            <p className="text-red-500 italic text-xs text-center mt-2">demo credentials: admin@admin.com pw - admin123</p>
+            <p className="text-red-500 italic text-xs text-center mt-2">
+              demo credentials: admin@admin.com pw - admin123
+            </p>
           </div>
-          
         </form>
-        
       </div>
     </div>
   );

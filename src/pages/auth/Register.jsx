@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaUser } from "react-icons/fa";
 import { GiPadlock } from "react-icons/gi";
 import bgImage from "../../assets/sacco-bg.jpg";
@@ -8,21 +8,51 @@ import logo from "/logo.png";
 import { MdLock, MdOutlinePhone } from "react-icons/md";
 import { HiMiniDevicePhoneMobile } from "react-icons/hi2";
 import { TbMailFilled } from "react-icons/tb";
+import { PiIdentificationBadgeDuotone } from "react-icons/pi";
+import { useAuth } from "../../context/AuthContext";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registerError, setRegisterError] = useState("");
+  const { register: registerUser } = useAuth();
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm();
+
   const password = watch("password");
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // TODO: Implement registration logic
+  const onSubmit = async (data) => {
+    try {
+      if (!data.terms) {
+        setRegisterError("You must agree to the terms and conditions");
+        return;
+      }
+
+      const result = await registerUser({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (result.success) {
+        // Registration successful, redirect to login
+        navigate("/login", {
+          state: {
+            message:
+              "Registration successful! Please login with your credentials.",
+          },
+        });
+      } else {
+        setRegisterError(result.error);
+      }
+    } catch (error) {
+      setRegisterError("An error occurred during registration");
+    }
   };
 
   return (
@@ -43,37 +73,11 @@ const Register = () => {
             Create Your Account
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Join our Welfare Community today
+            Join to access and manage your welfare savings and loans
           </p>
         </div>
 
         <form className="mt-4 space-y-5" onSubmit={handleSubmit(onSubmit)}>
-          <div>
-            <label
-              htmlFor="fullName"
-              className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300"
-            >
-              Full Name
-            </label>
-            <div className="relative">
-              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-5 w-5" />
-              <input
-                id="fullName"
-                type="text"
-                {...register("fullName", {
-                  required: "Full Name is required",
-                })}
-                className="input-field mt-1 pl-12 font-semibold text-gray-600 dark:text-gray-400 text-base py-[0.6rem]"
-                placeholder="Enter your full name"
-              />
-            </div>
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.fullName.message}
-              </p>
-            )}
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             {/* Email Input */}
             <div className="md:col-span-3">
@@ -112,10 +116,10 @@ const Register = () => {
                 htmlFor="phone"
                 className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300"
               >
-                Phone Number
+                Member ID
               </label>
               <div className="relative">
-                <HiMiniDevicePhoneMobile className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-5 w-5" />
+                <PiIdentificationBadgeDuotone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-6 w-6" />
                 <input
                   id="phone"
                   type="tel"
@@ -129,7 +133,7 @@ const Register = () => {
                     },
                   })}
                   className="input-field items-center mt-1 pl-12 font-semibold text-gray-600 dark:text-gray-400 text-base py-[0.6rem]"
-                  placeholder="+1234567890"
+                  placeholder="Welfare no."
                 />
               </div>
               {errors.phone && (

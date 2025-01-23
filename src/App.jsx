@@ -25,7 +25,9 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Login />} />
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/register" element={<Register />} />
 
           {/* Admin Routes */}
@@ -37,13 +39,13 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AdminDashboard />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
             <Route path="loans" element={<Loans />} />
             <Route path="savings" element={<Savings />} />
             <Route path="members" element={<Members />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
           </Route>
 
           {/* Member Routes */}
@@ -55,7 +57,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<MemberDashboard />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<MemberDashboard />} />
             <Route path="loans" element={<MemberLoans />} />
             <Route path="savings" element={<MemberSavings />} />
@@ -63,7 +65,7 @@ function App() {
           </Route>
 
           {/* Catch all route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
