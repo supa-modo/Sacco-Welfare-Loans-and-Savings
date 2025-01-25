@@ -96,6 +96,7 @@ const RepaymentModal = ({
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -171,14 +172,58 @@ const RepaymentModal = ({
     };
   };
 
+  const calculatePaymentDetails = (loan) => {
+    const amount = parseFloat(loan.amount);
+    const interestRate = parseFloat(loan.interestRate);
+    const loanTerm = parseInt(loan.loanTerm);
+    const monthlyInterest = interestRate / 100 / 12;
+
+    const monthlyPayment =
+      (amount * monthlyInterest * Math.pow(1 + monthlyInterest, loanTerm)) /
+      (Math.pow(1 + monthlyInterest, loanTerm) - 1);
+
+    const totalPayment = monthlyPayment * loanTerm;
+    const totalInterest = totalPayment - amount;
+
+    return {
+      monthlyPayment: monthlyPayment.toFixed(2),
+      totalPayment: totalPayment.toFixed(2),
+      totalInterest: totalInterest.toFixed(2),
+      remainingPayments: Math.ceil(loan.remainingBalance / monthlyPayment),
+    };
+  };
+
+  useEffect(() => {
+    if (formData.loanId) {
+      const selectedLoan = memberLoans.find(
+        (loan) => loan.id === formData.loanId
+      );
+      if (selectedLoan) {
+        const details = calculatePaymentDetails(selectedLoan);
+        setPaymentDetails(details);
+      }
+    }
+  }, [formData.loanId]);
+
   const validateForm = () => {
     const newErrors = {};
 
     if (mode === "individual") {
       if (!formData.memberId) newErrors.memberId = "Please select a member";
       if (!formData.loanId) newErrors.loanId = "Please select a loan";
-      if (!formData.amount || formData.amount <= 0) {
+
+      const selectedLoan = memberLoans.find(
+        (loan) => loan.id === formData.loanId
+      );
+      const amount = parseFloat(formData.amount);
+
+      if (!amount || amount <= 0) {
         newErrors.amount = "Please enter a valid amount";
+      } else if (
+        selectedLoan &&
+        amount > parseFloat(selectedLoan.remainingBalance)
+      ) {
+        newErrors.amount = `Amount cannot exceed the remaining balance of $ ${selectedLoan.remainingBalance}`;
       }
     } else {
       if (!groupData.date) newErrors.date = "Please select a date";
@@ -188,6 +233,14 @@ const RepaymentModal = ({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const getMaxAmount = () => {
+    if (!formData.loanId) return 0;
+    const selectedLoan = memberLoans.find(
+      (loan) => loan.id === formData.loanId
+    );
+    return selectedLoan ? parseFloat(selectedLoan.remainingBalance) : 0;
   };
 
   const handleSubmit = async (e) => {
@@ -385,6 +438,7 @@ const RepaymentModal = ({
                           name="amount"
                           value={formData.amount}
                           onChange={handleInputChange}
+                          max={getMaxAmount()}
                           className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
                             errors.amount
                               ? "border-2 border-red-500"
@@ -393,6 +447,16 @@ const RepaymentModal = ({
                           placeholder="Enter repayment amount"
                         />
                       </div>
+                      {errors.amount && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.amount}
+                        </p>
+                      )}
+                      {formData.loanId && (
+                        <p className="mt-1 text-sm text-gray-500">
+                          Maximum payment allowed: $ {getMaxAmount()}
+                        </p>
+                      )}
                     </div>
 
                     {/* Date */}
@@ -537,6 +601,40 @@ const RepaymentModal = ({
                 )}
               </div>
             </div>
+
+            {paymentDetails && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-700 mb-2">
+                  Payment Details
+                </h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Monthly Payment:</span>
+                    <span className="font-semibold ml-2">
+                      ${paymentDetails.monthlyPayment}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Total Payment:</span>
+                    <span className="font-semibold ml-2">
+                      ${paymentDetails.totalPayment}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Total Interest:</span>
+                    <span className="font-semibold ml-2">
+                      ${paymentDetails.totalInterest}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Remaining Payments:</span>
+                    <span className="font-semibold ml-2">
+                      {paymentDetails.remainingPayments}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="p-6 border-t border-gray-200 flex justify-end gap-4">
               <button

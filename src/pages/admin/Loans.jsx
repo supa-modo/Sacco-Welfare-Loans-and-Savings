@@ -97,7 +97,7 @@ const Loans = () => {
     {
       key: "dateIssued",
       header: "Date Issued",
-      render: (item) => `${formatDate(item.dateIssued)}`,
+      render: (item) => `${formatDate(item.dateIssued) || "---/--/----"}`,
     },
     {
       key: "dueDate",

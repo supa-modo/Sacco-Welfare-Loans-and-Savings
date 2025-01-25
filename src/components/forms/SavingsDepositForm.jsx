@@ -154,9 +154,9 @@ const SavingsModal = ({
         newErrors.amount = "Please enter a valid amount";
       }
     } else {
-      if (!groupData.amount || groupData.amount <= 0) {
-        newErrors.groupAmount = "Please enter a valid amount";
-      }
+      // if (!groupData.amount || groupData.amount <= 0) {
+      //   newErrors.groupAmount = "Please enter a valid amount";
+      // }
       if (!groupData.month) newErrors.month = "Please select a month";
       if (!groupData.year) newErrors.year = "Please select a year";
     }
@@ -424,11 +424,12 @@ const SavingsModal = ({
                         <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
+                      disabled
                         type="number"
                         name="amount"
                         value={groupData.amount}
                         onChange={(e) => handleInputChange(e, "group")}
-                        className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
+                        className={`pl-12 w-full font-semibold text-gray-600 hover:cursor-not-allowed rounded-lg border ${
                           errors.groupAmount
                             ? "border-2 border-red-500"
                             : "border-gray-300"

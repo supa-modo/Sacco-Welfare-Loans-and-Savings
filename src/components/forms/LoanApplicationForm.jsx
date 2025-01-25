@@ -82,6 +82,7 @@ const Modal = ({
     memberName: "",
     loanAmount: "",
     loanTerm: "12",
+    interestRate: "5",
     purpose: "",
     employmentContract: null,
     bankStatements: null,
@@ -164,10 +165,18 @@ const Modal = ({
       }
       if (!formData.loanAmount) {
         newErrors.loanAmount = "Loan amount is required";
-      } else if (formData.loanAmount < 500) {
-        newErrors.loanAmount = "Minimum loan amount is $ 10,000";
+      } else if (formData.loanAmount < 200) {
+        newErrors.loanAmount = "Minimum loan amount is $ 500";
       } else if (formData.loanAmount > 10000) {
-        newErrors.loanAmount = "Maximum loan amount is $ 10,000";
+        newErrors.loanAmount = "Maximum loan amount is $ 20,000";
+      }
+
+      if (!formData.interestRate) {
+        newErrors.interestRate = "Interest rate is required";
+      } else if (formData.interestRate < 1) {
+        newErrors.interestRate = "Minimum interest rate is 1%";
+      } else if (formData.interestRate > 100) {
+        newErrors.interestRate = "Maximum interest rate is 100%";
       }
 
       if (!formData.purpose) {
@@ -200,8 +209,8 @@ const Modal = ({
   const calculateMonthlyPayment = () => {
     const principal = parseFloat(formData.loanAmount) || 0;
     const numberOfPayments = parseInt(formData.loanTerm) || 12;
-    const annualInterestRate = 0.15;
-    const monthlyInterestRate = annualInterestRate / 12;
+    const annualInterestRate = parseFloat(formData.interestRate) || 15;
+    const monthlyInterestRate = annualInterestRate / 100 / 12;
     const monthlyPayment =
       (principal *
         monthlyInterestRate *
@@ -269,7 +278,7 @@ const Modal = ({
             onClick={onClose}
             className="absolute right-4 top-4 p-2 rounded-full hover:bg-red-100 transition-colors"
           >
-            <XMarkIcon className="w-5 h-5 text-red-500" />
+            <XMarkIcon className="w-6 h-6 text-red-500" />
           </button>
 
           <div className="p-6 border-b border-gray-200 text-center">
@@ -316,52 +325,84 @@ const Modal = ({
             <div className="space-y-6">
               {step === 1 && (
                 <div className="space-y-6">
-                  {/* Member Selection */}
-                  <div className="relative">
-                    <label className="block text-sm font-bold text-gray-600">
-                      Enter Loan Applicant from Welfare's Members
-                    </label>
-                    <div className="mt-1 relative rounded-lg shadow-sm">
-                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                        <UserIcon className="h-5 w-5 text-gray-400" />
+                  <div className="flex justify-between items-center space-x-8">
+                    {/* Member Selection */}
+                    <div className="relative w-[60%]">
+                      <label className="block text-sm font-bold text-gray-600">
+                        Enter Loan Applicant from Welfare's Members
+                      </label>
+                      <div className="mt-1 relative rounded-lg shadow-sm">
+                        <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                          <UserIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className={`pl-14 w-full font-bold text-primary-600 rounded-lg border ${
+                            errors.memberId
+                              ? "border-2 border-red-500"
+                              : "border-gray-300"
+                          } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                          placeholder="Search member by name"
+                        />
                       </div>
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`pl-14 w-full font-bold text-primary-600 rounded-lg border ${
-                          errors.memberId
-                            ? "border-2 border-red-500"
-                            : "border-gray-300"
-                        } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                        placeholder="Search member by name"
-                      />
-                    </div>
-                    {showSuggestions && filteredMembers.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
-                        {filteredMembers.map((member) => (
-                          <div
-                            key={member.id}
-                            onClick={() => selectMember(member)}
-                            className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
-                          >
-                            <div className="font-bold">{member.name}</div>
-                            <div className="text-sm font-semibold text-gray-500">
-                              ID: {member.id}
+                      {showSuggestions && filteredMembers.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
+                          {filteredMembers.map((member) => (
+                            <div
+                              key={member.id}
+                              onClick={() => selectMember(member)}
+                              className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
+                            >
+                              <div className="font-bold">{member.name}</div>
+                              <div className="text-sm font-semibold text-gray-500">
+                                ID: {member.id}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      )}
+                      {errors.memberId && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.memberId}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Loan Interest Rate */}
+                    <div className="w-[40%]">
+                      <label className="block text-sm font-bold text-gray-600">
+                        Interest Rate (% p.a.)
+                      </label>
+                      <div className="mt-1 relative rounded-lg shadow-sm">
+                        <input
+                          type="number"
+                          name="interestRate"
+                          value={formData.interestRate}
+                          onChange={handleInputChange}
+                          min="1"
+                          max="100"
+                          step="0.1"
+                          className={`pl-4 w-full font-semibold font-sans text-gray-500 rounded-lg border ${
+                            errors.interestRate
+                              ? "border-2 border-red-500"
+                              : "border-gray-300"
+                          } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                          placeholder="Enter interest rate"
+                        />
                       </div>
-                    )}
-                    {errors.memberId && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.memberId}
-                      </p>
-                    )}
+                      {errors.interestRate && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.interestRate}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
+                  {/* Loan Amount */}
                   <div className="flex justify-between items-center space-x-8">
-                    <div className="w-full">
+                    <div className="w-[60%]">
                       <label className="block text-sm font-bold text-gray-600">
                         Loan Amount
                       </label>
@@ -389,7 +430,8 @@ const Modal = ({
                       )}
                     </div>
 
-                    <div className="w-full">
+                    {/* Loan Repayment Term */}
+                    <div className="w-[40%]">
                       <label className="block text-sm font-bold text-gray-600">
                         Loan Repayment Term
                       </label>
@@ -454,7 +496,7 @@ const Modal = ({
                           Interest Rate:
                         </span>
                         <span className="text-sm font-bold text-gray-900">
-                          15% p.a.
+                          {formData.interestRate}% p.a.
                         </span>
                       </div>
                       <div className="flex justify-between">
