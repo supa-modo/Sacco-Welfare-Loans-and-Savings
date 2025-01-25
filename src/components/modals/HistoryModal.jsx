@@ -73,6 +73,7 @@ const FinancialHistoryModal = ({
           ![
             "createdAt",
             "updatedAt",
+            "memberId",
             "member",
             "remainingBalance",
             "repayments",
@@ -188,7 +189,9 @@ const FinancialHistoryModal = ({
 
   const progressPercentage =
     type === "loan"
-      ? ((details.amount - details.remainingBalance) / details.amount) * 100
+      ? details.remainingBalance === 0
+        ? 100
+        : ((details.amount - details.remainingBalance) / details.amount) * 100
       : null;
 
   const handleLoanApproval = async () => {
@@ -245,7 +248,9 @@ const FinancialHistoryModal = ({
                 ? "Loan Details & Repayment History"
                 : "Member Savings Details"}
               {applicantName && (
-                <span className="text-amber-300 font-bold font-open-sans ml-2">- {applicantName}</span>
+                <span className="text-amber-300 font-bold font-open-sans ml-2">
+                  - {applicantName} - {data.memberId}
+                </span>
               )}
             </h3>
             <button
@@ -289,118 +294,114 @@ const FinancialHistoryModal = ({
                   ))}
                 </div>
                 {type === "loan" && (
-                <div className="w-[40%]">
-                  <div className="">
-                    <h4 className="text-sm font-bold text-amber-700">
-                      Documents Provided
-                    </h4>
-                    <div className="mt-6 space-y-4">
-                      {data.documents?.employmentContract ? (
-                        <a
-                          href={data.documents.employmentContract}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center text-sm text-gray-500 hover:text-primary-500 hover:font-bold hover:underline hover:underline-offset-4 cursor-pointer"
-                        >
-                          <DocumentTextIcon className="h-5 w-5 mr-2" />
-                          Employment Letter / Contract
-                        </a>
-                      ) : (
-                        <div className="flex items-center text-sm text-red-500">
-                          <DocumentTextIcon className="h-5 w-5 mr-2" />
-                          Contract/Letter - N/A
-                        </div>
-                      )}
-                      {data.documents?.bankStatements ? (
-                        <a
-                          href={data.documents.bankStatements}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center text-sm text-gray-500 hover:text-primary-500 hover:font-bold hover:underline hover:underline-offset-4 cursor-pointer"
-                        >
-                          <DocumentTextIcon className="h-5 w-5 mr-2" />
-                          Bank Statements
-                        </a>
-                      ) : (
-                        <div className="flex items-center text-sm text-red-500">
-                          <DocumentTextIcon className="h-5 w-5 mr-2" />
-                          Bank Statement - N/A
-                        </div>
-                      )}
-                      {data.documents?.idDocument ? (
-                        <a
-                          href={data.documents.idDocument}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center text-sm text-gray-500 hover:text-primary-500 hover:font-bold hover:underline hover:underline-offset-4 cursor-pointer"
-                        >
-                          <DocumentTextIcon className="h-5 w-5 mr-2" />
-                          Identification Document
-                        </a>
-                      ) : (
-                        <div className="flex items-center text-sm text-red-500">
-                          <DocumentTextIcon className="h-5 w-5 mr-2" />
-                          ID - N/A
-                        </div>
-                      )}
+                  <div className="w-[40%]">
+                    <div className="">
+                      <h4 className="text-sm font-bold text-amber-700">
+                        Documents Provided
+                      </h4>
+                      <div className="mt-6 space-y-4">
+                        {data.documents?.employmentContract ? (
+                          <a
+                            href={data.documents.employmentContract}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-gray-500 hover:text-primary-500 hover:font-bold hover:underline hover:underline-offset-4 cursor-pointer"
+                          >
+                            <DocumentTextIcon className="h-5 w-5 mr-2" />
+                            Employment Letter / Contract
+                          </a>
+                        ) : (
+                          <div className="flex items-center text-sm text-red-500">
+                            <DocumentTextIcon className="h-5 w-5 mr-2" />
+                            Contract/Letter - N/A
+                          </div>
+                        )}
+                        {data.documents?.bankStatements ? (
+                          <a
+                            href={data.documents.bankStatements}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-gray-500 hover:text-primary-500 hover:font-bold hover:underline hover:underline-offset-4 cursor-pointer"
+                          >
+                            <DocumentTextIcon className="h-5 w-5 mr-2" />
+                            Bank Statements
+                          </a>
+                        ) : (
+                          <div className="flex items-center text-sm text-red-500">
+                            <DocumentTextIcon className="h-5 w-5 mr-2" />
+                            Bank Statement - N/A
+                          </div>
+                        )}
+                        {data.documents?.idDocument ? (
+                          <a
+                            href={data.documents.idDocument}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-gray-500 hover:text-primary-500 hover:font-bold hover:underline hover:underline-offset-4 cursor-pointer"
+                          >
+                            <DocumentTextIcon className="h-5 w-5 mr-2" />
+                            Identification Document
+                          </a>
+                        ) : (
+                          <div className="flex items-center text-sm text-red-500">
+                            <DocumentTextIcon className="h-5 w-5 mr-2" />
+                            ID - N/A
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mt-6">
-                    <button
-                      onClick={showApprovalConfirmation}
-                      disabled={data?.status !== "Pending"}
-                      className={`px-6 py-2 flex items-center space-x-3 rounded-lg font-semibold transition-all ${
-                        data?.status === "Pending"
-                          ? "bg-primary-500 text-white hover:bg-primary-600"
-                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      }`}
-                      title={
-                        data?.status !== "Pending"
-                          ? "This loan has already been processed"
-                          : "Approve this loan"
-                      }
-                    >
-                      <HiMiniShieldCheck size={22}/>
-                      <span>Approve this Loan</span>
-                    </button>
-                  </div>
-                </div>)}
-              </div>
-
-              {/* Progress Bar for Loans */}
-              {type === "loan" &&
-                details.amount &&
-                details.remainingBalance && (
-                  <div className="mt-3 bg-white rounded-lg p-4 border border-gray-200">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm font-bold text-gray-500">
-                        Repayment Progress
-                      </span>
-                      <span className="text-sm font-extrabold font-nunito-sans text-primary-600">
-                        {progressPercentage
-                          ? progressPercentage.toFixed(1)
-                          : "0"}
-                        %
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-primary-500 h-2.5 rounded-full transition-all duration-500"
-                        style={{ width: `${progressPercentage || 0}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-sm text-gray-500 mt-2">
-                      Remaining Balance:{" "}
-                      <span className="font-bold text-red-500">
-                        USD{" "}
-                        {details.remainingBalance
-                          ? details.remainingBalance.toLocaleString()
-                          : "0"}
-                      </span>
+                    <div className="mt-6">
+                      <button
+                        onClick={showApprovalConfirmation}
+                        disabled={data?.status !== "Pending"}
+                        className={`px-6 py-2 flex items-center space-x-3 rounded-lg font-semibold transition-all ${
+                          data?.status === "Pending"
+                            ? "bg-primary-500 text-white hover:bg-primary-600"
+                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        }`}
+                        title={
+                          data?.status !== "Pending"
+                            ? "This loan has already been processed"
+                            : "Approve this loan"
+                        }
+                      >
+                        <HiMiniShieldCheck size={22} />
+                        <span>Approve this Loan</span>
+                      </button>
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Progress Bar for Loans */}
+              {type === "loan" && details.amount && (
+                <div className="mt-3 bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-bold text-gray-500">
+                      Repayment Progress
+                    </span>
+                    <span className="text-sm font-extrabold font-nunito-sans text-primary-600">
+                      {progressPercentage.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="bg-primary-500 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${progressPercentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-sm text-gray-500 mt-2">
+                    Remaining Balance:{" "}
+                    <span className="font-bold text-red-500">
+                      USD{" "}
+                      {details.remainingBalance
+                        ? details.remainingBalance.toLocaleString()
+                        : "0"}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Transaction History Section */}

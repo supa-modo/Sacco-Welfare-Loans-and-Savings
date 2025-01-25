@@ -167,7 +167,7 @@ const Modal = ({
         newErrors.loanAmount = "Loan amount is required";
       } else if (formData.loanAmount < 200) {
         newErrors.loanAmount = "Minimum loan amount is $ 500";
-      } else if (formData.loanAmount > 10000) {
+      } else if (formData.loanAmount > 20000) {
         newErrors.loanAmount = "Maximum loan amount is $ 20,000";
       }
 
@@ -230,6 +230,7 @@ const Modal = ({
       formDataObj.append("amount", formData.loanAmount);
       formDataObj.append("purpose", formData.purpose);
       formDataObj.append("loanTerm", formData.loanTerm);
+      formDataObj.append("interestRate", formData.interestRate)
       formDataObj.append("employmentContract", formData.employmentContract);
       formDataObj.append("bankStatements", formData.bankStatements);
       formDataObj.append("idDocument", formData.idDocument);
@@ -244,6 +245,7 @@ const Modal = ({
       setNotificationModalOpen(true);
       onClose();
     } catch (error) {
+
       setNotificationConfig({
         type: "error",
         title: "Submission Failed",

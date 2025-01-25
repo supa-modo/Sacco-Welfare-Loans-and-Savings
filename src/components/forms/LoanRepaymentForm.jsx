@@ -11,6 +11,7 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import NotificationModal from "../common/NotificationModal";
+import formatDate from "../../utils/dateFormatter";
 
 const LoanRepaymentButton = ({ onRepaymentAdded }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -306,7 +307,7 @@ const RepaymentModal = ({
           onClick={onClose}
         />
         <div className="flex min-h-screen items-center justify-center p-4 ">
-          <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl transform transition-all">
+          <div className="relative w-full px-6 max-w-4xl bg-white rounded-xl shadow-2xl transform transition-all">
             <button
               onClick={onClose}
               className="absolute right-4 top-4 p-2 rounded-full hover:bg-red-100 transition-colors"
@@ -374,7 +375,7 @@ const RepaymentModal = ({
                         />
                       </div>
                       {showSuggestions && filteredMembers.length > 0 && (
-                        <div className="absolute z-10 w-[94%] mt-1 bg-white rounded-lg shadow-lg border border-gray-200">
+                        <div className="absolute z-10 w-[90%] mt-1 bg-white rounded-lg shadow-lg border border-gray-200">
                           {filteredMembers.map((member) => (
                             <div
                               key={member.id}
@@ -393,70 +394,78 @@ const RepaymentModal = ({
                       )}
                     </div>
 
-                    {/* Loan Selection */}
-                    {selectedMember && (
-                      <div>
-                        <label className="block text-sm font-bold text-gray-600">
-                          Select Loan
-                        </label>
-                        <select
-                          name="loanId"
-                          value={formData.loanId}
-                          onChange={handleInputChange}
-                          className={`mt-1 w-full font-semibold text-gray-600 rounded-lg border ${
-                            errors.loanId
-                              ? "border-2 border-red-500"
-                              : "border-gray-300"
-                          } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11 px-4`}
-                        >
-                          <option value="">Select a loan</option>
-                          {memberLoans.map((loan) => (
-                            <option
-                              key={loan.id}
-                              value={loan.id}
-                              className="font-semibold text-[15px"
-                            >
-                              Loan #{loan.id} - Balance: $
-                              {loan.remainingBalance}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {/* Amount */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-600">
-                        Repayment Amount
-                      </label>
-                      <div className="mt-1 relative rounded-lg shadow-sm">
-                        <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                          <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+                    <div className="flex justify-between items-center space-x-8">
+                      {/* Loan Selection */}
+                      {selectedMember && (
+                        <div className="w-[60%]">
+                          <label className="block text-sm font-bold text-gray-600">
+                            Select Loan
+                          </label>
+                          <select
+                            name="loanId"
+                            value={formData.loanId}
+                            onChange={handleInputChange}
+                            className={`mt-1 w-full font-semibold text-gray-600 rounded-lg border ${
+                              errors.loanId
+                                ? "border-2 border-red-500"
+                                : "border-gray-300"
+                            } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11 px-4`}
+                          >
+                            <option value="">Select a loan</option>
+                            {memberLoans.map((loan) => (
+                              <option
+                                key={loan.id}
+                                value={loan.id}
+                                className="font-semibold text-[15px"
+                              >
+                                Loan #{loan.id} - Balance: $
+                                {loan.remainingBalance}
+                              </option>
+                            ))}
+                          </select>
+                          {formData.loanId && (
+                          <p className="mt-1 text-sm text-gray-500">
+                            Due Date: {formatDate(memberLoans.find(loan => loan.id === formData.loanId).dueDate)}
+                          </p>
+                        )}
                         </div>
-                        <input
-                          type="number"
-                          name="amount"
-                          value={formData.amount}
-                          onChange={handleInputChange}
-                          max={getMaxAmount()}
-                          className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
-                            errors.amount
-                              ? "border-2 border-red-500"
-                              : "border-gray-300"
-                          } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                          placeholder="Enter repayment amount"
-                        />
-                      </div>
-                      {errors.amount && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {errors.amount}
-                        </p>
                       )}
-                      {formData.loanId && (
-                        <p className="mt-1 text-sm text-gray-500">
-                          Maximum payment allowed: $ {getMaxAmount()}
-                        </p>
-                      )}
+
+                      {/* Amount */}
+                      {selectedMember && (
+                      <div className="w-[40%]">
+                        <label className="block text-sm font-bold text-gray-600">
+                          Repayment Amount
+                        </label>
+                        <div className="mt-1 relative rounded-lg shadow-sm">
+                          <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                            <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <input
+                            type="number"
+                            name="amount"
+                            value={formData.amount}
+                            onChange={handleInputChange}
+                            max={getMaxAmount()}
+                            className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
+                              errors.amount
+                                ? "border-2 border-red-500"
+                                : "border-gray-300"
+                            } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                            placeholder="Enter repayment amount"
+                          />
+                        </div>
+                        {errors.amount && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.amount}
+                          </p>
+                        )}
+                        {formData.loanId && (
+                          <p className="mt-1 text-sm text-gray-500">
+                            Maximum payment allowed: $ {getMaxAmount()}
+                          </p>
+                        )}
+                      </div>)}
                     </div>
 
                     {/* Date */}
@@ -603,32 +612,32 @@ const RepaymentModal = ({
             </div>
 
             {paymentDetails && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold text-gray-700 mb-2">
+              <div className="px-8 pb-4 bg-gray-50 rounded-lg">
+                <h4 className="font-bold text-sm text-red-600 mb-2">
                   Payment Details
                 </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Monthly Payment:</span>
-                    <span className="font-semibold ml-2">
+                    <span className="font-bold font-nunito-sans ml-2">
                       ${paymentDetails.monthlyPayment}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Total Payment:</span>
-                    <span className="font-semibold ml-2">
+                    <span className="font-bold font-nunito-sans ml-2">
                       ${paymentDetails.totalPayment}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Total Interest:</span>
-                    <span className="font-semibold ml-2">
+                    <span className="font-bold font-nunito-sans ml-2">
                       ${paymentDetails.totalInterest}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Remaining Payments:</span>
-                    <span className="font-semibold ml-2">
+                    <span className="font-bold font-nunito-sans ml-2">
                       {paymentDetails.remainingPayments}
                     </span>
                   </div>
