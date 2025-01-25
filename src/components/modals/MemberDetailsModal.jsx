@@ -3,6 +3,7 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { HiMiniArrowsUpDown } from "react-icons/hi2";
 import DataTable from "../common/DataTable";
 import { LiaUserEditSolid } from "react-icons/lia";
+import formatDate from "../../utils/dateFormatter";
 
 const TabButton = ({ active, onClick, children }) => (
   <button
@@ -289,25 +290,12 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                       {
                         header: "Date Issued",
                         accessor: "dateIssued",
-                        render: (item) =>
-                          new Date(item.dateIssued).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            }
-                          ),
+                        render: (item) => `${formatDate(item.dateIssued)}`,
                       },
                       {
                         header: "Due Date",
                         accessor: "dueDate",
-                        render: (item) =>
-                          new Date(item.dueDate).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }),
+                        render: (item) => `${formatDate(item.dueDate)}`,
                       },
                     ]}
                     searchPlaceholder="Filter loans by Loan ID / Amount / Purpose / Status..."
@@ -336,14 +324,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                       title="Last Contribution"
                       value={
                         lastContribution
-                          ? new Date(lastContribution).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )
+                          ? `${formatDate(lastContribution)}`
                           : "N/A"
                       }
                     />
@@ -365,14 +346,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                           header: "Date",
                           accessor: "transactionDate",
                           render: (item) =>
-                            new Date(item.transactionDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            ),
+                            `${formatDate(item.transactionDate)}`,
                         },
                         { header: "Type", accessor: "transactionType" },
                         {

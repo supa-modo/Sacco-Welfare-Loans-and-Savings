@@ -11,17 +11,28 @@ import FinancialHistoryModal from "../../components/modals/HistoryModal";
 import loansData from "../../data/loans.json";
 import loanRepaymentsData from "../../data/loanRepayments.json";
 
-const MemberLoans = ({ memberId = "M1002" }) => {
+const MemberLoans = ({ memberId = "M1001" }) => {
   const [loans, setLoans] = useState([]);
   const [selectedLoanId, setSelectedLoanId] = useState(null);
   const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState(false);
 
-  useEffect(() => {
+  useEffect(async () => {
     // Filter loans for logged-in member
-    const memberLoans = loansData.loans.filter(
-      (loan) => loan.applicantMemberID === memberId
-    );
-    setLoans(memberLoans);
+    try {
+      // const response = await fetch(`http://localhost:5000/api/loans/${id}`);
+      const response = await fetch(`http://localhost:5000/api/loans/member/M1001`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch data");
+          }
+          const result = await response.json();
+          setLoans(result);
+    } catch (error) {
+      
+    }
+    // const memberLoans = loansData.loans.filter(
+    //   (loan) => loan.applicantMemberID === memberId
+    // );
+    // setLoans(memberLoans);
   }, [memberId]);
 
   // Calculate statistics for the logged-in member

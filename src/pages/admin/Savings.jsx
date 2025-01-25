@@ -8,32 +8,33 @@ import {
 import DataTable from "../../components/common/DataTable";
 import AddSavingsButton from "../../components/forms/SavingsDepositForm";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
+import { savingsService } from "../../services/api";
+import formatDate from "../../utils/dateFormatter";
 
 const Savings = () => {
   const [savings, setSavings] = useState([]);
-  const [selectedMemberId, setSelectedMemberId] = useState(null);
+  const [selectedSaving, setSelectedSaving] = useState(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch savings data from the backend
-  useEffect(() => {
-    const fetchSavings = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/savings");
-        if (!response.ok) {
-          throw new Error("Failed to fetch savings");
-        }
-        const data = await response.json();
+  const loadSavings = async () => {
+    try {
+      const data = await savingsService.getAllSavings();
+      if (!data) {
+        setError("Failed to fetch savings");
+      } else {
         setSavings(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchSavings();
+  useEffect(() => {
+    loadSavings();
   }, []);
 
   // Stats (you can update these dynamically based on fetched data)
@@ -41,7 +42,7 @@ const Savings = () => {
     {
       title: "Total Savings",
       value: `$ ${savings
-        .reduce((sum, saving) => sum + parseFloat(saving.amount), 0)
+        .reduce((sum, saving) => sum + parseFloat(saving.currentSavingsBalance), 0)
         .toLocaleString()}`,
       icon: BanknotesIcon,
       trend: "+8.3%",
@@ -50,7 +51,7 @@ const Savings = () => {
       iconColor: "text-primary",
     },
     {
-      title: "Monthly Contributions",
+      title: "Active Savings Accounts",
       value: `$ ${savings
         .filter((saving) => saving.type === "Monthly Contribution")
         .reduce((sum, saving) => sum + parseFloat(saving.amount), 0)
@@ -62,7 +63,7 @@ const Savings = () => {
       iconColor: "text-green-500",
     },
     {
-      title: "Withdrawals",
+      title: "Average Monthly Savings",
       value: `$ ${savings
         .filter((saving) => saving.type === "Withdrawal")
         .reduce((sum, saving) => sum + parseFloat(saving.amount), 0)
@@ -74,7 +75,7 @@ const Savings = () => {
       iconColor: "text-red-500",
     },
     {
-      title: "Next Collection",
+      title: "Next Savings Collection",
       value: "5 Days",
       icon: CalendarDaysIcon,
       trend: "",
@@ -86,23 +87,23 @@ const Savings = () => {
 
   const savingsFilters = [
     {
-      key: "type",
-      label: "Filter by Type",
+      key: "accountStatus",
+      label: "Filter by Account Status",
       options: [
         { value: "All", label: "All Savings" },
-        { value: "Monthly Contribution", label: "Monthly Contribution" },
-        { value: "Additional Savings", label: "Additional Savings" },
+        { value: "Active", label: "Active" },
+        { value: "Inactive", label: "Inactive" },
       ],
     },
-    {
-      key: "status",
-      label: "Filter by Status",
-      options: [
-        { value: "Completed", label: "Completed" },
-        { value: "Pending", label: "Pending" },
-        { value: "Failed", label: "Failed" },
-      ],
-    },
+    // {
+    //   key: "status",
+    //   label: "Filter by Status",
+    //   options: [
+    //     { value: "Completed", label: "Completed" },
+    //     { value: "Pending", label: "Pending" },
+    //     { value: "Failed", label: "Failed" },
+    //   ],
+    // },
   ];
 
   if (loading) return <div>Loading...</div>;
@@ -114,7 +115,9 @@ const Savings = () => {
         <h1 className="text-3xl font-extrabold text-amber-700">
           Member Savings Accounts
         </h1>
-        <AddSavingsButton />
+        <div className="flex items-center space-x-10">
+          <AddSavingsButton onSavingsAdded={loadSavings} />
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -157,31 +160,46 @@ const Savings = () => {
           columns={[
             { header: "Member ID", accessor: "memberId" },
             {
-              header: "Amount",
-              accessor: "amount",
-              render: (item) => `$ ${item.amount.toLocaleString()}`,
+              header: "Member Name",
+              accessor: "member.name",
+              render: (item) => item.member.name,
             },
-            { header: "Type", accessor: "type" },
             {
-              header: "Status",
-              accessor: "status",
+              header: "Balance",
+              accessor: "currentSavingsBalance",
+              render: (item) =>
+                `$ ${item.currentSavingsBalance.toLocaleString()}`,
+            },
+            {
+              header: "Monthly",
+              accessor: "monthlySavingsAmt",
+              render: (item) => `$ ${item.monthlySavingsAmt.toLocaleString()}`,
+            },
+            {
+              header: "Date Joined",
+              accessor: "dateJoined",
+              render: (item) => `${formatDate(item.updatedAt)}`,
+            },
+            {
+              header: "Account",
+              accessor: "accountStatus",
               render: (item) => (
                 <span
                   className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
-                    item.status === "Completed"
+                    item.accountStatus === "Active"
                       ? "bg-primary-300 text-green-800"
-                      : item.status === "Pending"
-                      ? "bg-amber-200 text-yellow-800"
-                      : "bg-red-400 text-red-800"
+                      : item.accountStatus === "Inactive"
+                      ? "bg-red-400 text-red-800"
+                      : "bg-amber-200 text-yellow-800"
                   }`}
                 >
-                  {item.status}
+                  {item.accountStatus}
                 </span>
               ),
             },
           ]}
           onRowClick={(row) => {
-            setSelectedMemberId(row.memberId);
+            setSelectedSaving(row);
             setIsHistoryModalOpen(true);
           }}
           filters={savingsFilters}
@@ -196,7 +214,8 @@ const Savings = () => {
           open={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
           type="savings"
-          id={selectedMemberId}
+          id={selectedSaving?.memberId}
+          applicantName={selectedSaving?.member?.name}
         />
       </div>
     </div>

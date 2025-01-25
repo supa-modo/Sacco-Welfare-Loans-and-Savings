@@ -126,11 +126,7 @@ const Register = () => {
                   inputMode="numeric"
                   {...register("phone", {
                     required: "Phone number is required",
-                    pattern: {
-                      value:
-                        /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/,
-                      message: "Invalid phone number",
-                    },
+                  
                   })}
                   className="input-field items-center mt-1 pl-12 font-semibold text-gray-600 dark:text-gray-400 text-base py-[0.6rem]"
                   placeholder="Welfare no."

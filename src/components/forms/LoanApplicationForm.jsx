@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { loanService, memberService } from "../../services/api";
 import {
   CurrencyDollarIcon,
   CalendarIcon,
@@ -10,10 +11,16 @@ import {
   XMarkIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import members from "../../data/members.json";
+import NotificationModal from "../common/NotificationModal";
 
-const LoanApplicationButton = () => {
+const LoanApplicationButton = ({ onLoanAdded }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+  const [notificationConfig, setNotificationConfig] = useState({
+    type: "success",
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -25,6 +32,13 @@ const LoanApplicationButton = () => {
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    if (onLoanAdded) {
+      onLoanAdded();
+    }
+  };
 
   return (
     <>
@@ -38,12 +52,30 @@ const LoanApplicationButton = () => {
         </span>
       </button>
 
-      {isOpen && <Modal onClose={() => setIsOpen(false)} />}
+      {isOpen && (
+        <Modal
+          onClose={handleClose}
+          setNotificationConfig={setNotificationConfig}
+          setNotificationModalOpen={setNotificationModalOpen}
+        />
+      )}
+
+      <NotificationModal
+        isOpen={notificationModalOpen}
+        onClose={() => setNotificationModalOpen(false)}
+        title={notificationConfig.title}
+        message={notificationConfig.message}
+        type={notificationConfig.type}
+      />
     </>
   );
 };
 
-const Modal = ({ onClose }) => {
+const Modal = ({
+  onClose,
+  setNotificationConfig,
+  setNotificationModalOpen,
+}) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     memberId: "",
@@ -59,20 +91,29 @@ const Modal = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredMembers, setFilteredMembers] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = members.members.filter(
-        (member) =>
-          member.status === "Active" &&
-          member.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredMembers(filtered);
-      setShowSuggestions(true);
-    } else {
-      setFilteredMembers([]);
-      setShowSuggestions(false);
-    }
+    const fetchMembers = async () => {
+      if (searchTerm) {
+        try {
+          const members = await memberService.getAllMembers();
+          const filtered = members.filter(
+            (member) =>
+              member.status === "Active" &&
+              member.name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredMembers(filtered);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error("Failed to fetch members:", error);
+        }
+      } else {
+        setFilteredMembers([]);
+        setShowSuggestions(false);
+      }
+    };
+    fetchMembers();
   }, [searchTerm]);
 
   const selectMember = (member) => {
@@ -102,9 +143,15 @@ const Modal = ({ onClose }) => {
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === "file") {
-      setFormData({ ...formData, [name]: files });
+      setFormData({ ...formData, [name]: files[0] });
+      if (errors[name]) {
+        setErrors({ ...errors, [name]: null });
+      }
     } else {
       setFormData({ ...formData, [name]: value });
+      if (errors[name]) {
+        setErrors({ ...errors, [name]: null });
+      }
     }
   };
 
@@ -163,10 +210,44 @@ const Modal = ({ onClose }) => {
     return isNaN(monthlyPayment) ? 0 : monthlyPayment.toFixed(2);
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      // Create FormData object for file upload
+      const formDataObj = new FormData();
+      formDataObj.append("memberId", formData.memberId);
+      formDataObj.append("amount", formData.loanAmount);
+      formDataObj.append("purpose", formData.purpose);
+      formDataObj.append("loanTerm", formData.loanTerm);
+      formDataObj.append("employmentContract", formData.employmentContract);
+      formDataObj.append("bankStatements", formData.bankStatements);
+      formDataObj.append("idDocument", formData.idDocument);
+
+      await loanService.createLoan(formDataObj);
+      setNotificationConfig({
+        type: "success",
+        title: "Loan Application Submitted",
+        message:
+          "The loan application has been successfully submitted for processing.",
+      });
+      setNotificationModalOpen(true);
       onClose();
+    } catch (error) {
+      setNotificationConfig({
+        type: "error",
+        title: "Submission Failed",
+        message:
+          error.response?.data?.error || "Failed to submit loan application.",
+      });
+      setNotificationModalOpen(true);
+      setErrors({
+        submit:
+          error.response?.data?.error || "Failed to submit loan application",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -249,7 +330,9 @@ const Modal = ({ onClose }) => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={`pl-14 w-full font-bold text-primary-600 rounded-lg border ${
-                          errors.memberId ? "border-2 border-red-500" : "border-gray-300"
+                          errors.memberId
+                            ? "border-2 border-red-500"
+                            : "border-gray-300"
                         } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
                         placeholder="Search member by name"
                       />
@@ -276,58 +359,58 @@ const Modal = ({ onClose }) => {
                       </p>
                     )}
                   </div>
-                  
-                  <div className="flex justify-between items-center space-x-8">
-                  <div className="w-full">
-                    <label className="block text-sm font-bold text-gray-600">
-                      Loan Amount
-                    </label>
-                    <div className="mt-1 relative rounded-lg shadow-sm">
-                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                        <CurrencyDollarIcon className="h-5 w-5 text-gray-500" />
-                      </div>
-                      <input
-                        type="number"
-                        name="loanAmount"
-                        value={formData.loanAmount}
-                        onChange={handleInputChange}
-                        className={`pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border ${
-                          errors.loanAmount
-                            ? "border-2 border-red-500"
-                            : "border-gray-300"
-                        } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                        placeholder="Enter loan amount"
-                      />
-                    </div>
-                    {errors.loanAmount && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.loanAmount}
-                      </p>
-                    )}
-                  </div>
 
-                  <div className="w-full">
-                    <label className="block text-sm font-bold text-gray-600">
-                      Loan Repayment Term
-                    </label>
-                    <div className="mt-1 relative rounded-lg shadow-sm">
-                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                        <CalendarIcon className="h-5 w-5 text-gray-400" />
+                  <div className="flex justify-between items-center space-x-8">
+                    <div className="w-full">
+                      <label className="block text-sm font-bold text-gray-600">
+                        Loan Amount
+                      </label>
+                      <div className="mt-1 relative rounded-lg shadow-sm">
+                        <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                          <CurrencyDollarIcon className="h-5 w-5 text-gray-500" />
+                        </div>
+                        <input
+                          type="number"
+                          name="loanAmount"
+                          value={formData.loanAmount}
+                          onChange={handleInputChange}
+                          className={`pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border ${
+                            errors.loanAmount
+                              ? "border-2 border-red-500"
+                              : "border-gray-300"
+                          } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                          placeholder="Enter loan amount"
+                        />
                       </div>
-                      <select
-                        name="loanTerm"
-                        value={formData.loanTerm}
-                        onChange={handleInputChange}
-                        className="pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11"
-                      >
-                        {[6, 12, 24, 36, 48, 60].map((months) => (
-                          <option key={months} value={months}>
-                            {months} months
-                          </option>
-                        ))}
-                      </select>
+                      {errors.loanAmount && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.loanAmount}
+                        </p>
+                      )}
                     </div>
-                  </div>
+
+                    <div className="w-full">
+                      <label className="block text-sm font-bold text-gray-600">
+                        Loan Repayment Term
+                      </label>
+                      <div className="mt-1 relative rounded-lg shadow-sm">
+                        <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                          <CalendarIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <select
+                          name="loanTerm"
+                          value={formData.loanTerm}
+                          onChange={handleInputChange}
+                          className="pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11"
+                        >
+                          {[6, 12, 24, 36, 48, 60].map((months) => (
+                            <option key={months} value={months}>
+                              {months} months
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
                   <div>
@@ -340,7 +423,9 @@ const Modal = ({ onClose }) => {
                       onChange={handleInputChange}
                       rows={4}
                       className={`mt-1 font-sans font-semibold text-gray-500 w-full rounded-lg border ${
-                        errors.purpose ? "border-2 border-red-500" : "border-gray-300"
+                        errors.purpose
+                          ? "border-2 border-red-500"
+                          : "border-gray-300"
                       } focus:border-amber-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent p-2`}
                       placeholder="Describe the purpose of your loan"
                     />
@@ -402,7 +487,9 @@ const Modal = ({ onClose }) => {
                       name="employmentContract"
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
-                        errors.employmentContract ? "border-2 border-red-500" : "border-gray-300"
+                        errors.employmentContract
+                          ? "border-2 border-red-500"
+                          : "border-gray-300"
                       } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf,.doc,.docx"
                     />
@@ -445,7 +532,9 @@ const Modal = ({ onClose }) => {
                       name="idDocument"
                       onChange={handleInputChange}
                       className={`mt-1 w-full rounded-lg border ${
-                        errors.idDocument ? "border-2 border-red-500" : "border-gray-300"
+                        errors.idDocument
+                          ? "border-2 border-red-500"
+                          : "border-gray-300"
                       } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans font-semibold text-gray-600 text-[0.92rem] p-2`}
                       accept=".pdf,.jpg,.jpeg,.png"
                     />
@@ -539,16 +628,16 @@ const Modal = ({ onClose }) => {
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            Employment Letter / Contract - employmentContract_document_name.pdf
+                            Employment Letter / Contract -{" "}
+                            {formData.employmentContract.name}
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            Bank Statements - BankStatement_document_name.pdf
+                            Bank Statements - {formData.bankStatements.name}
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            ID Document -
-                            IdentificationDocument_document_name.pdf
+                            ID Document - {formData.idDocument.name}
                           </div>
                         </div>
                       </div>

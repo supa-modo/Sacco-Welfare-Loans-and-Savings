@@ -21,7 +21,7 @@ const DashboardLayout = ({ isAdmin }) => {
 
       <main
         className={`flex-1 overflow-auto p-8 ${
-          darkMode ? "bg-gray-900 text-white" : "bg-gray-50"
+          darkMode ? "bg-gray-900 text-white" : "bg-gradient-to-br from-amber-50 via-gray-100 to-primary-50"
         }`}
       >
         {/* This is where the child routes will be rendered */}

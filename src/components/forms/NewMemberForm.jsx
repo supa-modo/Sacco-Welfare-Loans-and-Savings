@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { memberService } from "../../services/api";
 import {
   PlusIcon,
   XMarkIcon,
@@ -10,14 +11,19 @@ import {
   UserGroupIcon,
   InformationCircleIcon,
   ArrowRightIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
-import { GiOfficeChair } from "react-icons/gi";
-import { SiOnlyfans, SiOnlyoffice } from "react-icons/si";
-import { TbNumber } from "react-icons/tb";
-import { GoNumber } from "react-icons/go";
+import { SiOnlyoffice } from "react-icons/si";
+import NotificationModal from "../../components/common/NotificationModal";
 
-const AddMemberButton = () => {
+const AddMemberButton = ({ onMemberAdded }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+  const [notificationConfig, setNotificationConfig] = useState({
+    type: "success",
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -30,6 +36,13 @@ const AddMemberButton = () => {
     };
   }, [isOpen]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+    if (onMemberAdded) {
+      onMemberAdded();
+    }
+  };
+
   return (
     <>
       <button
@@ -40,27 +53,49 @@ const AddMemberButton = () => {
         <span className="font-semibold text-[0.9rem]">Add New Member</span>
       </button>
 
-      {isOpen && <AddMemberModal onClose={() => setIsOpen(false)} />}
+      {isOpen && (
+        <AddMemberModal
+          onClose={handleClose}
+          setNotificationConfig={setNotificationConfig}
+          setNotificationModalOpen={setNotificationModalOpen}
+        />
+      )}
+
+      <NotificationModal
+        isOpen={notificationModalOpen}
+        onClose={() => setNotificationModalOpen(false)}
+        title={notificationConfig.title}
+        message={notificationConfig.message}
+        type={notificationConfig.type}
+      />
     </>
   );
 };
 
-const AddMemberModal = ({ onClose }) => {
+const AddMemberModal = ({
+  onClose,
+  setNotificationConfig,
+  setNotificationModalOpen,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
-    dateOfBirth: "",
-    identificationNumber: "",
+    pfNo: "",
     jobTitle: "",
-    emergencyContact: "",
+    monthlySavingsAmt: "5000", // Default monthly savings amount
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: null });
+    }
   };
 
   const validateForm = () => {
@@ -71,22 +106,55 @@ const AddMemberModal = ({ onClose }) => {
     if (!formData.phone || formData.phone.length < 10)
       newErrors.phone = "Valid phone number is required";
     if (!formData.address) newErrors.address = "Address is required";
-    if (!formData.dateOfBirth)
-      newErrors.dateOfBirth = "Date of birth is required";
-    if (!formData.identificationNumber)
-      newErrors.identificationNumber = "Passport/ID Number is required";
+    if (!formData.pfNo) newErrors.pfNo = "Staff PF Number is required";
     if (!formData.jobTitle)
       newErrors.jobTitle = "Official Job Title is required";
+    if (!formData.monthlySavingsAmt || formData.monthlySavingsAmt <= 0)
+      newErrors.monthlySavingsAmt = "Monthly savings amount is required";
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-    } else {
-      console.log("Member details submitted:", formData);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const memberId = `M${Date.now().toString().slice(3, 9)}`;
+      const memberData = {
+        ...formData,
+        id: memberId,
+        joinDate: new Date(),
+        status: "Active",
+        savingsBalance: 0,
+        loansBalance: 0,
+      };
+
+      await memberService.createMember(memberData);
+      setNotificationConfig({
+        type: "success",
+        title: "Member Added Successfully",
+        message: "The new member has been registered in the system.",
+      });
+      setNotificationModalOpen(true);
       onClose();
+    } catch (error) {
+      setNotificationConfig({
+        type: "error",
+        title: "Failed to Add Member. Please try again.",
+        message:
+          error.response?.data?.error ||
+          "An error occurred while adding the member.",
+      });
+      setNotificationModalOpen(true);
+      setErrors({
+        submit: error.response?.data?.error || "Failed to create member",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -121,7 +189,7 @@ const AddMemberModal = ({ onClose }) => {
 
           <div className="p-8 space-y-6">
             <div className="grid grid-cols-2 gap-6">
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-bold text-gray-600">
                   Full Name
                 </label>
@@ -199,33 +267,6 @@ const AddMemberModal = ({ onClose }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-600">
-                  Date of Birth
-                </label>
-                <div className="mt-1 relative rounded-lg shadow-sm">
-                  <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                    <CalendarIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth}
-                    onChange={handleInputChange}
-                    className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
-                      errors.dateOfBirth
-                        ? "border-2 border-red-500"
-                        : "border-gray-300"
-                    } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                  />
-                  {errors.dateOfBirth && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.dateOfBirth}
-                    </p>
-                  )}
-                </div>
-              </div>
-
               <div className="col-span-2">
                 <label className="block text-sm font-bold text-gray-600">
                   Residential Address
@@ -292,20 +333,18 @@ const AddMemberModal = ({ onClose }) => {
                   </div>
                   <input
                     type="text"
-                    name="identificationNumber"
-                    value={formData.identificationNumber}
+                    name="pfNo"
+                    value={formData.pfNo}
                     onChange={handleInputChange}
                     className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
-                      errors.identificationNumber
+                      errors.pfNo
                         ? "border-2 border-red-500"
                         : "border-gray-300"
                     } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
                     placeholder="Member's Staff PF No"
                   />
-                  {errors.identificationNumber && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.identificationNumber}
-                    </p>
+                  {errors.pfNo && (
+                    <p className="mt-1 text-sm text-red-600">{errors.pfNo}</p>
                   )}
                 </div>
               </div>
@@ -313,36 +352,76 @@ const AddMemberModal = ({ onClose }) => {
 
             <div className="bg-amber-100 rounded-lg p-4 mt-6">
               <div className="flex">
-                <InformationCircleIcon className=" w-12 text-red-500 mr-2" />
+                <InformationCircleIcon className="w-12 text-red-500 mr-2" />
                 <div>
                   <h3 className="text-sm font-bold font-nunito-sans text-amber-800">
                     Important Notice
                   </h3>
                   <p className="mt-1 text-sm text-amber-700">
                     By submitting this form, you confirm that all provided
-                    information is accurate and complete. This information will
-                    be used for member identification and communication
-                    purposes.
+                    information is accurate and complete. A mandatory initial
+                    deposit of KES 1000 will be recorded for the new member's
+                    savings account.
                   </p>
                 </div>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-bold text-gray-600">
+                Monthly Savings Amount
+              </label>
+              <div className="mt-1 relative rounded-lg shadow-sm">
+                <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                  <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="number"
+                  name="monthlySavingsAmt"
+                  value={formData.monthlySavingsAmt}
+                  onChange={handleInputChange}
+                  className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
+                    errors.monthlySavingsAmt
+                      ? "border-2 border-red-500"
+                      : "border-gray-300"
+                  } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                  placeholder="Enter default monthly savings amount"
+                />
+              </div>
+              {errors.monthlySavingsAmt && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.monthlySavingsAmt}
+                </p>
+              )}
+              <p className="mt-1 text-sm text-gray-500">
+                This amount will be used for monthly group contributions
+                deducted from the member's salary.
+              </p>
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
               <button
                 onClick={onClose}
                 className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
-                className="flex items-center gap-2 px-6 py-2 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors"
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-6 py-2 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
               >
-                Register Member
+                {isSubmitting ? "Creating..." : "Register Member"}
                 <ArrowRightIcon className="w-4 h-4" />
               </button>
             </div>
+
+            {errors.submit && (
+              <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                {errors.submit}
+              </div>
+            )}
           </div>
         </div>
       </div>

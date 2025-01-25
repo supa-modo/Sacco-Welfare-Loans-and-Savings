@@ -1,5 +1,7 @@
 import React from "react";
-import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { IoClose } from "react-icons/io5";
+import { FiCheckCircle, FiAlertTriangle, FiAlertCircle } from "react-icons/fi";
+import { GoInfo } from "react-icons/go";
 
 const NotificationModal = ({
   isOpen,
@@ -14,10 +16,10 @@ const NotificationModal = ({
   if (!isOpen) return null;
 
   const icons = {
-    confirm: <AlertCircle className="w-12 h-12 text-primary-600" />,
-    success: <CheckCircle className="w-12 h-12 text-primary-600" />,
-    error: <AlertTriangle className="w-12 h-12 text-red-500" />,
-    info: <Info className="w-12 h-12 text-primary-600" />,
+    confirm: <FiAlertCircle className="w-12 h-12 text-primary-500" />,
+    success: <FiCheckCircle className="w-12 h-12 text-primary-500" />,
+    error: <FiAlertTriangle className="w-12 h-12 text-red-500" />,
+    info: <GoInfo className="w-12 h-12 text-primary-500" />,
   };
 
   const backgrounds = {
@@ -28,8 +30,8 @@ const NotificationModal = ({
   };
 
   const confirmButtonColors = {
-    confirm: "bg-primary-700 hover:bg-primary-600",
-    success: "bg-primary-700 hover:bg-primary-600",
+    confirm: "bg-primary-500 hover:bg-primary-600",
+    success: "bg-primary-500 hover:bg-primary-600",
     error: "bg-red-600 hover:bg-red-700",
     info: "bg-blue-600 hover:bg-blue-700",
   };
@@ -51,7 +53,7 @@ const NotificationModal = ({
           onClick={onClose}
           className="absolute top-4 right-4 p-1 rounded-full hover:bg-black hover:bg-opacity-5 transition-colors"
         >
-          <X className="w-5 h-5 text-gray-500 hover:text-red-500" />
+          <IoClose className="w-5 h-5 text-gray-500 hover:text-red-500" />
         </button>
 
         {/* Content */}

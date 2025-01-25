@@ -8,6 +8,8 @@ import {
 import DataTable from "../../components/common/DataTable";
 import AddMemberButton from "../../components/forms/NewMemberForm";
 import MemberDetailsModal from "../../components/modals/MemberDetailsModal";
+import formatDate from "../../utils/dateFormatter";
+import { memberService } from "../../services/api";
 
 const Members = () => {
   const [members, setMembers] = useState([]);
@@ -20,11 +22,7 @@ const Members = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/members");
-        if (!response.ok) {
-          throw new Error("Failed to fetch members");
-        }
-        const data = await response.json();
+        const data = await memberService.getAllMembers();
         setMembers(data);
       } catch (error) {
         setError(error.message);
@@ -90,11 +88,11 @@ const Members = () => {
     {
       key: "joinDate",
       header: "Join Date",
-      render: (item) => new Date(item.joinDate).toLocaleDateString(),
+      render: (item) => `${formatDate(item.joinDate)}`,
     },
     {
       key: "savingsBalance",
-      header: "Total Savings",
+      header: "Savings",
       render: (item) => `$ ${parseFloat(item.savingsBalance).toLocaleString()}`,
     },
     {
@@ -131,6 +129,11 @@ const Members = () => {
     },
   ];
 
+  const loadMembers = async () => {
+    const data = await memberService.getAllMembers();
+    setMembers(data);
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -140,7 +143,7 @@ const Members = () => {
         <h1 className="text-3xl font-extrabold text-amber-700">
           Staff Welfare Members
         </h1>
-        <AddMemberButton />
+        <AddMemberButton onMemberAdded={loadMembers} />
       </div>
 
       {/* Stats Grid */}

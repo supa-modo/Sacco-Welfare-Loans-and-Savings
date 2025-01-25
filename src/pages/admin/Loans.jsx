@@ -8,33 +8,35 @@ import {
 import DataTable from "../../components/common/DataTable";
 import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
+import formatDate from "../../utils/dateFormatter";
+import LoanRepaymentButton from "../../components/forms/LoanRepaymentForm";
 
 const Loans = () => {
   const [loans, setLoans] = useState([]);
-  const [selectedLoanId, setSelectedLoanId] = useState(null);
+  const [selectedLoan, setSelectedLoan] = useState(null);
   const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Fetch loans data from the backend
   useEffect(() => {
-    const fetchLoans = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/loans");
-        if (!response.ok) {
-          throw new Error("Failed to fetch loans");
-        }
-        const data = await response.json();
-        setLoans(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLoans();
   }, []);
+
+  const fetchLoans = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/loans");
+      if (!response.ok) {
+        throw new Error("Failed to fetch loans");
+      }
+      const data = await response.json();
+      setLoans(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Stats (you can update these dynamically based on fetched data)
   const stats = [
@@ -81,18 +83,26 @@ const Loans = () => {
 
   const loanColumns = [
     { key: "id", header: "Loan ID" },
-    { key: "memberId", header: "Member ID" },
+    {
+      key: "member.name",
+      header: "Applicant Name",
+      render: (item) => item.member.name,
+    },
     { key: "amount", header: "Amount", render: (item) => `$ ${item.amount}` },
-    { key: "purpose", header: "Purpose" },
+    {
+      key: "remainingBalance",
+      header: "Remaining Bal.",
+      render: (item) => `$ ${item.remainingBalance}`,
+    },
     {
       key: "dateIssued",
       header: "Date Issued",
-      render: (item) => new Date(item.dateIssued).toLocaleDateString(),
+      render: (item) => `${formatDate(item.dateIssued)}`,
     },
     {
       key: "dueDate",
       header: "Due Date",
-      render: (item) => new Date(item.dueDate).toLocaleDateString(),
+      render: (item) => `${formatDate(item.dueDate)}`,
     },
     {
       key: "status",
@@ -138,7 +148,18 @@ const Loans = () => {
         <h1 className="text-3xl font-extrabold text-amber-700">
           Welfare Loan Applications
         </h1>
-        <LoanApplicationButton />
+        <div className="flex gap-6 mr-6">
+          <LoanApplicationButton
+            onLoanAdded={() => {
+              fetchLoans();
+            }}
+          />
+          <LoanRepaymentButton
+            onRepaymentAdded={() => {
+              fetchLoans();
+            }}
+          />
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -180,7 +201,7 @@ const Loans = () => {
           data={loans}
           columns={loanColumns}
           onRowClick={(row) => {
-            setSelectedLoanId(row.id);
+            setSelectedLoan(row);
             setIsRepaymentModalOpen(true);
           }}
           filters={loanFilters}
@@ -195,7 +216,8 @@ const Loans = () => {
           open={isRepaymentModalOpen}
           onClose={() => setIsRepaymentModalOpen(false)}
           type="loan"
-          id={selectedLoanId}
+          id={selectedLoan?.id}
+          applicantName={selectedLoan?.member?.name}
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { memberService, savingsService } from "../../services/api";
 import {
   PlusIcon,
   XMarkIcon,
@@ -11,9 +12,16 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import members from "../../data/members.json";
+import NotificationModal from "../common/NotificationModal";
 
-const AddSavingsButton = () => {
+const AddSavingsButton = ({ onSavingsAdded }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+  const [notificationConfig, setNotificationConfig] = useState({
+    type: "success",
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -26,6 +34,13 @@ const AddSavingsButton = () => {
     };
   }, [isOpen]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+    if (onSavingsAdded) {
+      onSavingsAdded();
+    }
+  };
+
   return (
     <>
       <button
@@ -33,15 +48,33 @@ const AddSavingsButton = () => {
         className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
       >
         <PlusIcon className="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" />
-        <span className="font-semibold text-[0.9rem]">Record New Savings</span>
+        <span className="font-semibold text-[0.9rem]">Record New Savings Deposit</span>
       </button>
 
-      {isOpen && <SavingsModal onClose={() => setIsOpen(false)} />}
+      {isOpen && (
+        <SavingsModal
+          onClose={handleClose}
+          setNotificationConfig={setNotificationConfig}
+          setNotificationModalOpen={setNotificationModalOpen}
+        />
+      )}
+
+      <NotificationModal
+        isOpen={notificationModalOpen}
+        onClose={() => setNotificationModalOpen(false)}
+        title={notificationConfig.title}
+        message={notificationConfig.message}
+        type={notificationConfig.type}
+      />
     </>
   );
 };
 
-const SavingsModal = ({ onClose }) => {
+const SavingsModal = ({
+  onClose,
+  setNotificationConfig,
+  setNotificationModalOpen,
+}) => {
   const [mode, setMode] = useState("individual"); // individual or group
   const [searchTerm, setSearchTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -52,8 +85,7 @@ const SavingsModal = ({ onClose }) => {
     amount: "",
     date: new Date().toISOString().split("T")[0],
     notes: "",
-    transactionType: "Cash",
-    transactionRefNumber: "",
+    type: "Monthly Contribution",
   });
   const [groupData, setGroupData] = useState({
     amount: "",
@@ -63,20 +95,29 @@ const SavingsModal = ({ onClose }) => {
     notes: "",
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = members.members.filter(
-        (member) =>
-          member.status === "Active" &&
-          member.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredMembers(filtered);
-      setShowSuggestions(true);
-    } else {
-      setFilteredMembers([]);
-      setShowSuggestions(false);
-    }
+    const fetchMembers = async () => {
+      if (searchTerm) {
+        try {
+          const members = await memberService.getAllMembers();
+          const filtered = members.filter(
+            (member) =>
+              member.status === "Active" &&
+              member.name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredMembers(filtered);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error("Failed to fetch members:", error);
+        }
+      } else {
+        setFilteredMembers([]);
+        setShowSuggestions(false);
+      }
+    };
+    fetchMembers();
   }, [searchTerm]);
 
   const selectMember = (member) => {
@@ -93,8 +134,14 @@ const SavingsModal = ({ onClose }) => {
     const { name, value } = e.target;
     if (type === "individual") {
       setFormData({ ...formData, [name]: value });
+      if (errors[name]) {
+        setErrors({ ...errors, [name]: null });
+      }
     } else {
       setGroupData({ ...groupData, [name]: value });
+      if (errors[`group_${name}`]) {
+        setErrors({ ...errors, [`group_${name}`]: null });
+      }
     }
   };
 
@@ -103,11 +150,8 @@ const SavingsModal = ({ onClose }) => {
 
     if (mode === "individual") {
       if (!formData.memberId) newErrors.memberId = "Please select a member";
-      if (!formData.transactionRefNumber)
-        newErrors.transactionRefNumber =
-          "Please enter a transaction reference number";
       if (!formData.amount || formData.amount <= 0) {
-        newErrors.amount = "You need to provide a transaction reference number";
+        newErrors.amount = "Please enter a valid amount";
       }
     } else {
       if (!groupData.amount || groupData.amount <= 0) {
@@ -121,14 +165,50 @@ const SavingsModal = ({ onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
       if (mode === "individual") {
-        console.log("Individual savings recorded:", formData);
+        await savingsService.recordIndividualSavings({
+          memberId: formData.memberId,
+          amount: formData.amount,
+          type: formData.type,
+          date: formData.date,
+          notes: formData.notes,
+        });
+        setNotificationConfig({
+          type: "success",
+          title: "Savings Recorded",
+          message:
+            "Individual savings transaction has been successfully recorded.",
+        });
       } else {
-        console.log("Group savings recorded:", groupData);
+        await savingsService.recordGroupSavings(groupData);
+        setNotificationConfig({
+          type: "success",
+          title: "Group Savings Recorded",
+          message:
+            "Monthly group contribution has been successfully recorded for all members.",
+        });
       }
+      setNotificationModalOpen(true);
       onClose();
+    } catch (error) {
+      setNotificationConfig({
+        type: "error",
+        title: "Transaction Failed",
+        message:
+          error.response?.data?.error ||
+          "Failed to record savings transaction.",
+      });
+      setNotificationModalOpen(true);
+      setErrors({
+        submit: error.response?.data?.error || "Failed to record savings",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -194,45 +274,45 @@ const SavingsModal = ({ onClose }) => {
                     Select Member
                   </label>
                   <div className="mt-1 relative rounded-lg shadow-sm">
-                    <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                      <UserIcon className="h-5 w-5 text-gray-400" />
+                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                        <UserIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={`pl-14 w-full font-semibold text-primary-600 rounded-lg border ${
+                          errors.memberId
+                            ? "border-2 border-red-500"
+                            : "border-gray-300"
+                        } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                        placeholder="Search member by name"
+                      />
                     </div>
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
-                        errors.memberId
-                          ? "border-2 border-red-500"
-                          : "border-gray-300"
-                      } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                      placeholder="Search member by name"
-                    />
-                  </div>
-                  {showSuggestions && filteredMembers.length > 0 && (
-                    <div className="absolute z-10 w-[94%] mt-1 bg-white rounded-lg shadow-lg border border-gray-200">
-                      {filteredMembers.map((member) => (
-                        <div
-                          key={member.id}
-                          onClick={() => selectMember(member)}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                        >
-                          <div className="font-bold text-primary-600">
-                            {member.name}
+                    {showSuggestions && filteredMembers.length > 0 && (
+                      <div className="absolute z-10 w-[94%] mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
+                        {filteredMembers.map((member) => (
+                          <div
+                            key={member.id}
+                            onClick={() => selectMember(member)}
+                            className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
+                          >
+                            <div className="font-bold">{member.name}</div>
+                            <div className="text-sm font-semibold text-gray-500">
+                              ID: {member.id}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-500">
-                            ID: {member.id}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {errors.memberId && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.memberId}
-                    </p>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                    {errors.memberId && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.memberId}
+                      </p>
+                    )}
                 </div>
+
+                
 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
@@ -269,8 +349,8 @@ const SavingsModal = ({ onClose }) => {
                     </label>
                     <div className="mt-1 relative rounded-lg shadow-sm">
                       <select
-                        name="transactionType"
-                        value={formData.transactionType}
+                        name="type"
+                        value={formData.type}
                         onChange={handleInputChange}
                         className="w-full font-semibold text-gray-600 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11 px-4"
                       >
@@ -284,30 +364,20 @@ const SavingsModal = ({ onClose }) => {
 
                 <div>
                   <label className="block text-sm font-bold text-gray-600">
-                    Transaction Reference Number
+                    Transaction Date
                   </label>
                   <div className="mt-1 relative rounded-lg shadow-sm">
                     <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                      <DocumentTextIcon className="h-5 w-5 text-gray-400" />
+                      <CalendarIcon className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      type="text"
-                      name="transactionRefNumber"
-                      value={formData.transactionRefNumber}
+                      type="date"
+                      name="date"
+                      value={formData.date}
                       onChange={handleInputChange}
-                      className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
-                        errors.transactionRefNumber
-                          ? "border-2 border-red-500"
-                          : "border-gray-300"
-                      } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                      placeholder="Enter Transaction Ref Number"
+                      className="pl-12 w-full font-semibold text-gray-600 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11"
                     />
                   </div>
-                  {errors.transactionRefNumber && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.transactionRefNumber}
-                    </p>
-                  )}
                 </div>
 
                 <div>
@@ -469,17 +539,25 @@ const SavingsModal = ({ onClose }) => {
             <button
               onClick={onClose}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-colors"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 font-semibold transition-colors flex items-center gap-2"
+              disabled={isSubmitting}
             >
-              <span>Save Transaction</span>
+              {isSubmitting ? "Processing..." : "Save Transaction"}
               <ArrowRightIcon className="w-4 h-4" />
             </button>
           </div>
+
+          {errors.submit && (
+            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+              {errors.submit}
+            </div>
+          )}
         </div>
       </div>
     </div>
