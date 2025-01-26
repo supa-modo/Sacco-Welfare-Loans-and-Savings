@@ -5,6 +5,7 @@ import { IoSearch } from "react-icons/io5";
 import { TbChevronLeft, TbChevronRight, TbTrash } from "react-icons/tb";
 
 const DataTable = ({
+  title,
   columns,
   data,
   filters,
@@ -104,6 +105,11 @@ const DataTable = ({
     <div className="space-y-2">
       {/* Header Section */}
       <div className="bg-white shadow-md border-t border-gray-100 rounded-2xl flex items-center justify-between py-4 px-6 space-x-4">
+        {title && (
+          <h3 className="font-nunito-sans font-extrabold uppercase text-amber-700 text-[17pxs] ">
+            {title}
+          </h3>
+        )}
         {/* Filters */}
         {filters && (
           <div className="flex flex-wrap gap-2">

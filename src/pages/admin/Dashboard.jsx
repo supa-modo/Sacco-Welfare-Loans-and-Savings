@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 import {
   BanknotesIcon,
   UsersIcon,
@@ -6,382 +7,380 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import DataTable from "../../components/common/DataTable";
-import { memberService, loanService, savingsService } from "../../services/api";
+import FinancialHistoryModal from "../../components/modals/HistoryModal";
 import formatDate from "../../utils/dateFormatter";
+import { loanService, memberService, savingsService } from "../../services/api";
 
-const AdminDashboard = () => {
-  const [loans, setLoans] = useState([]);
-  const [members, setMembers] = useState([]);
-  const [savings, setSavings] = useState([]);
+const Dashboard = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dashboardData, setDashboardData] = useState({
+    members: [],
+    loans: [],
+    savings: [],
+    recentTransactions: [],
+    activeLoans: [],
+    activeMembers: [],
+  });
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyType, setHistoryType] = useState(null);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        // Fetch all required data in parallel
-        const [membersData, loansData, savingsData] = await Promise.all([
-          memberService.getAllMembers(),
-          loanService.getAllLoans(),
-          savingsService.getAllSavings(),
-        ]);
-
-        setMembers(membersData);
-        setLoans(loansData);
-        setSavings(savingsData);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, []);
 
-  // Calculate summary statistics from real data
-  const totalMembers = members.length;
-  const activeMembersCount = members.filter(
-    (m) => m.status === "Active"
-  ).length;
-  const totalSavingsAmount = members.reduce(
-    (sum, m) => sum + (parseFloat(m.savingsBalance) || 0),
-    0
-  );
-  const monthlyContributions = savings
-    .filter((s) => s.type === "Monthly Contribution")
-    .reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [membersData, loansData, savingsData] = await Promise.all([
+        memberService.getAllMembers(),
+        loanService.getAllLoans(),
+        savingsService.getAllSavings(),
+      ]);
 
-  const activeLoans = loans.filter((loan) => loan.status === "Active");
-  const totalActiveLoanAmount = activeLoans.reduce(
-    (sum, loan) => sum + (parseFloat(loan.amount) || 0),
-    0
-  );
+      // Get recent transactions from both loans and savings
+      const loanTransactions = loansData
+        .flatMap((loan) => loan.repayments || [])
+        .map((repayment) => ({
+          ...repayment,
+          id: repayment.id,
+          type: "Loan Repayment",
+          memberName: loansData.find((loan) => loan.id === repayment.loanId)
+            ?.member?.name,
+          date: repayment.date,
+        }));
 
-  const loanColumns = [
-    { key: "id", header: "Loan ID" },
-    { key: "memberName", header: "Member Name" },
-    {
-      key: "amount",
-      header: "Amount",
-      render: (item) => `$ ${parseFloat(item.amount).toLocaleString()}`,
-    },
-    { key: "purpose", header: "Purpose" },
-    {
-      key: "dateIssued",
-      header: "Date Issued",
-      render: (item) => formatDate(item.dateIssued),
-    },
-    {
-      key: "dueDate",
-      header: "Due Date",
-      render: (item) => formatDate(item.dueDate),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (item) => (
-        <span
-          className={`px-2 py-1 text-xs font-medium rounded-full ${
-            item.status === "Active"
-              ? "bg-green-100 text-green-800"
-              : item.status === "Completed"
-              ? "bg-blue-100 text-blue-800"
-              : item.status === "Pending"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {item.status}
-        </span>
-      ),
-    },
-  ];
+      const savingsTransactions = savingsData
+        .flatMap((saving) => saving.transactions || [])
+        .map((transaction) => ({
+          ...transaction,
+          id: transaction.id,
+          type: transaction.transactionType,
+          memberName: savingsData.find(
+            (saving) => saving.memberId === transaction.memberId
+          )?.member?.name,
+          date: transaction.transactionDate,
+          amount: transaction.amount,
+          status: "Completed",
+        }));
 
-  const memberColumns = [
-    { key: "id", header: "Member ID" },
-    { key: "name", header: "Name" },
-    { key: "email", header: "Email" },
-    { key: "phone", header: "Phone" },
-    {
-      key: "joinDate",
-      header: "Join Date",
-      render: (item) => formatDate(item.joinDate),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (item) => (
-        <span
-          className={`px-2 py-1 text-xs font-medium rounded-full ${
-            item.status === "Active"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {item.status}
-        </span>
-      ),
-    },
-    {
-      key: "savingsBalance",
-      header: "Total Savings",
-      render: (item) => `$ ${parseFloat(item.savingsBalance).toLocaleString()}`,
-    },
-  ];
+      // Combine and sort all transactions by date
+      const allTransactions = [...loanTransactions, ...savingsTransactions]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 10); // Get only the 10 most recent transactions
 
-  const savingsColumns = [
-    { key: "memberId", header: "Member ID" },
-    { key: "memberName", header: "Name" },
-    {
-      key: "amount",
-      header: "Amount",
-      render: (item) => `$ ${parseFloat(item.amount).toLocaleString()}`,
-    },
-    {
-      key: "date",
-      header: "Date",
-      render: (item) => formatDate(item.date),
-    },
-    { key: "type", header: "Type" },
-    {
-      key: "status",
-      header: "Status",
-      render: (item) => (
-        <span
-          className={`px-2 py-1 text-xs font-medium rounded-full ${
-            item.status === "Completed"
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {item.status}
-        </span>
-      ),
-    },
-  ];
+      // Filter active loans and members
+      const activeLoansData = loansData.filter(
+        (loan) => loan.status === "Active"
+      );
+      const activeMembersData = membersData.filter(
+        (member) => member.status === "Active"
+      );
+
+      setDashboardData({
+        members: membersData,
+        loans: loansData,
+        savings: savingsData,
+        recentTransactions: allTransactions,
+        activeLoans: activeLoansData,
+        activeMembers: activeMembersData,
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setError(error.message || "Failed to fetch dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRowClick = (item, type) => {
+    setSelectedItem(item);
+    setHistoryType(type);
+    setHistoryModalOpen(true);
+  };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 font-semibold text-gray-600">Loading dashboard data...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center text-red-600">
-          <p className="text-xl font-bold">Error loading dashboard data</p>
-          <p className="mt-2">{error}</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500 font-semibold">{error}</div>
       </div>
     );
   }
 
+  // Calculate statistics
+  const totalMembers = dashboardData.members.length;
+  const activeMembers = dashboardData.members.filter(
+    (member) => member.status === "Active"
+  ).length;
+  const totalLoans = dashboardData.loans.length;
+  const activeLoans = dashboardData.loans.filter(
+    (loan) => loan.status === "Active"
+  ).length;
+  const totalLoanAmount = dashboardData.loans.reduce(
+    (sum, loan) => sum + parseFloat(loan.amount || 0),
+    0
+  );
+  const totalSavings = dashboardData.members.reduce(
+    (sum, member) => sum + parseFloat(member.savingsBalance || 0),
+    0
+  );
+
   return (
-    <div className="flex min-h-screen">
-      <main className="flex-1 pt-4 overflow-y-auto">
-        <h1 className="text-3xl font-extrabold text-amber-700">
-          Staff Welfare Association Dashboard
-        </h1>
-        <div className="py-6 px-8">
-          {/* Payment Statistics */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Total Savings Card */}
-            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <BanknotesIcon className="h-12 w-12 text-primary-600" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm text-amber-600 font-semibold font-geist">
-                        Total Savings Balance
-                      </dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
-                          $ {totalSavingsAmount.toLocaleString()}
-                        </div>
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
+    <div className="p-6 space-y-6 max-w-[2000px] mx-auto">
+      {/* Welcome Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold text-amber-700">
+            Welcome back, {user?.name || "Admin"}
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Here's what's happening with the welfare group today.
+          </p>
+        </div>
+      </div>
+
+      {/* Statistics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Savings Card */}
+        <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <BanknotesIcon className="h-12 w-12 text-primary-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm text-amber-600 font-semibold font-geist">
+                    Total Savings Balance
+                  </dt>
+                  <dd className="flex items-baseline">
+                    <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
+                      $ {totalSavings.toLocaleString()}
+                    </div>
+                  </dd>
+                </dl>
               </div>
             </div>
-
-            {/* Active Loans Card */}
-            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <DocumentTextIcon className="h-12 w-12 text-red-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm text-amber-600 font-semibold font-geist">
-                        Active Loans
-                      </dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
-                          {activeLoans.length} -{" "}
-                          <span className="text-primary-500">
-                            $ {totalActiveLoanAmount.toLocaleString()}
-                          </span>
-                        </div>
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Total Members Card */}
-            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <UsersIcon className="h-12 w-12 text-gray-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm text-amber-600 font-semibold font-geist">
-                        Total Members
-                      </dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
-                          {totalMembers}
-                          <span className="ml-2 text-sm text-gray-500">
-                            ({activeMembersCount} active)
-                          </span>
-                        </div>
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Monthly Contributions Card */}
-            <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <CalendarDaysIcon className="h-12 w-12 text-blue-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm text-amber-600 font-semibold font-geist">
-                        Monthly Contributions
-                      </dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
-                          $ {monthlyContributions.toLocaleString()}
-                        </div>
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Loans */}
-          <div className="mt-8">
-            <h2 className="text-xl font-bold font-nunito-sans text-primary-600 mb-4">
-              Recent Loans
-            </h2>
-            <DataTable
-              columns={loanColumns}
-              data={loans}
-              filters={[
-                {
-                  key: "status",
-                  label: "Filter by Status",
-                  options: [
-                    { value: "All", label: "All Loans" },
-                    { value: "Active", label: "Active" },
-                    { value: "Completed", label: "Completed" },
-                    { value: "Pending", label: "Pending" },
-                    { value: "Rejected", label: "Rejected" },
-                  ],
-                },
-              ]}
-              searchPlaceholder="Search by loan applicant name or loan ID..."
-            />
-          </div>
-
-          {/* Members List */}
-          <div className="mt-8">
-            <h2 className="text-xl font-bold font-nunito-sans text-primary-600 mb-4">
-              Welfare Members
-            </h2>
-            <DataTable
-              columns={memberColumns}
-              data={members}
-              filters={[
-                {
-                  key: "status",
-                  label: "Filter by Status",
-                  options: [
-                    { value: "All", label: "All Members" },
-                    { value: "Active", label: "Active Members" },
-                    { value: "Inactive", label: "Inactive Members" },
-                  ],
-                },
-              ]}
-              searchPlaceholder="Search by member name or Member ID..."
-            />
-          </div>
-
-          {/* Savings Accounts */}
-          <div className="mt-8">
-            <h2 className="text-xl font-bold font-nunito-sans text-primary-600 mb-4">
-              Savings Accounts
-            </h2>
-            <DataTable
-              columns={savingsColumns}
-              data={savings}
-              filters={[
-                {
-                  key: "type",
-                  label: "Filter by Type",
-                  options: [
-                    { value: "All", label: "All Savings" },
-                    {
-                      value: "Monthly Contribution",
-                      label: "Monthly Contribution",
-                    },
-                    {
-                      value: "Additional Savings",
-                      label: "Additional Savings",
-                    },
-                  ],
-                },
-                {
-                  key: "status",
-                  label: "Filter by Status",
-                  options: [
-                    { value: "All", label: "All Status" },
-                    { value: "Completed", label: "Completed" },
-                    { value: "Pending", label: "Pending" },
-                  ],
-                },
-              ]}
-              searchPlaceholder="Search by member name or savings ID..."
-            />
           </div>
         </div>
-      </main>
+
+        {/* Total Loans Card */}
+        <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <DocumentTextIcon className="h-12 w-12 text-red-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm text-amber-600 font-semibold font-geist">
+                    Active Loans
+                  </dt>
+                  <dd className="flex items-baseline">
+                    <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
+                      {activeLoans} -{" "}
+                      <span className="text-primary-500">
+                        $ {totalLoanAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Members Card */}
+        <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <UsersIcon className="h-12 w-12 text-gray-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm text-amber-600 font-semibold font-geist">
+                    Total Members
+                  </dt>
+                  <dd className="flex items-baseline">
+                    <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
+                      {totalMembers}
+                      <span className="ml-2 text-sm text-gray-500">
+                        ({activeMembers} active)
+                      </span>
+                    </div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Monthly Contributions Card */}
+        <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-white p-4 rounded-xl border border-gray-300 shadow-md">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CalendarDaysIcon className="h-12 w-12 text-blue-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm text-amber-600 font-semibold font-geist">
+                    Monthly Contributions
+                  </dt>
+                  <dd className="flex items-baseline">
+                    <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
+                      $ {(totalSavings / totalMembers).toLocaleString()}
+                    </div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Transactions Table */}
+      <div className="   rounded-2xl overflow-hidden">
+       
+        <DataTable
+          title="Recent Transactions"
+          data={dashboardData.recentTransactions}
+          columns={[
+            {
+              header: "Member",
+              accessor: "memberName",
+            },
+            {
+              header: "Transaction Type",
+              accessor: "type",
+            },
+            {
+              header: "Amount",
+              accessor: "amount",
+              render: (item) =>
+                `$${Math.abs(parseFloat(item.amount)).toLocaleString()}`,
+            },
+            {
+              header: "Date",
+              accessor: "date",
+              render: (item) => formatDate(item.date),
+            },
+            {
+              header: "Status",
+              accessor: "status",
+            },
+          ]}
+          onRowClick={(item) =>
+            handleRowClick(
+              item,
+              item.type === "Loan Repayment" ? "loan" : "savings"
+            )
+          }
+          searchPlaceholder="Search transactions..."
+        />
+      </div>
+
+      {/* Active Loans Table */}
+      <div className=" rounded-2xl overflow-hidden">
+        <DataTable
+          title="Active Loan Applications"
+          data={dashboardData.activeLoans || []}
+          columns={[
+            {
+              header: "Member",
+              accessor: "member.name",
+            },
+            {
+              header: "Loan Amount",
+              accessor: "amount",
+              render: (item) => `$${parseFloat(item.amount).toLocaleString()}`,
+            },
+            {
+              header: "Balance",
+              accessor: "remainingBalance",
+              render: (item) =>
+                `$${parseFloat(item.remainingBalance).toLocaleString()}`,
+            },
+            {
+              header: "Issue Date",
+              accessor: "dateIssued",
+              render: (item) => formatDate(item.dateIssued),
+            },
+            {
+              header: "Due Date",
+              accessor: "dueDate",
+              render: (item) => formatDate(item.dueDate),
+            },
+            {
+              header: "Status",
+              accessor: "status",
+            },
+          ]}
+          onRowClick={(item) => handleRowClick(item, "loan")}
+          searchPlaceholder="Search active loans..."
+        />
+      </div>
+
+      {/* Active Members Table */}
+      <div className=" rounded-2xl overflow-hidden">
+        <DataTable
+          title="Active Welfare Members"
+          data={dashboardData.activeMembers || []}
+          columns={[
+            {
+              header: "Member ID",
+              accessor: "id",
+            },
+            {
+              header: "Name",
+              accessor: "name",
+            },
+            {
+              header: "Email",
+              accessor: "email",
+            },
+            {
+              header: "Phone",
+              accessor: "phone",
+            },
+            {
+              header: "Join Date",
+              accessor: "joinDate",
+              render: (item) => formatDate(item.joinDate),
+            },
+            {
+              header: "Savings Balance",
+              accessor: "savingsBalance",
+              render: (item) =>
+                `$${parseFloat(item.savingsBalance).toLocaleString()}`,
+            },
+          ]}
+          searchPlaceholder="Search active members..."
+        />
+      </div>
+
+      {/* History Modal */}
+      <FinancialHistoryModal
+        open={historyModalOpen}
+        onClose={() => setHistoryModalOpen(false)}
+        type={historyType}
+        id={selectedItem?.id}
+        applicantName={selectedItem?.memberName}
+      />
     </div>
   );
 };
 
-export default AdminDashboard;
+export default Dashboard;
