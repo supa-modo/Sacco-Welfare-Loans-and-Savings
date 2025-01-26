@@ -20,14 +20,14 @@ const Savings = () => {
 
   const loadSavings = async () => {
     try {
+      setLoading(true);
       const data = await savingsService.getAllSavings();
       if (!data) {
-        setError("Failed to fetch savings");
-      } else {
-        setSavings(data);
+        throw new Error("Failed to fetch savings data");
       }
+      setSavings(data);
     } catch (error) {
-      setError(error.message);
+      setError(error.message || "Failed to fetch savings. Please try again.");
     } finally {
       setLoading(false);
     }

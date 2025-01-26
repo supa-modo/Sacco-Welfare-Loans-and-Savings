@@ -22,10 +22,14 @@ const Members = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
+        setLoading(true);
         const data = await memberService.getAllMembers();
+        if (!data) {
+          throw new Error("Failed to fetch members");
+        }
         setMembers(data);
       } catch (error) {
-        setError(error.message);
+        setError(error.message || "Failed to fetch members. Please try again.");
       } finally {
         setLoading(false);
       }

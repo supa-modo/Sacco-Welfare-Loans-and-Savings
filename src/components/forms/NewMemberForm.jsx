@@ -144,15 +144,12 @@ const AddMemberModal = ({
     } catch (error) {
       setNotificationConfig({
         type: "error",
-        title: "Failed to Add Member. Please try again.",
+        title: "Failed to Add Member",
         message:
           error.response?.data?.error ||
           "An error occurred while adding the member.",
       });
       setNotificationModalOpen(true);
-      setErrors({
-        submit: error.response?.data?.error || "Failed to create member",
-      });
     } finally {
       setIsSubmitting(false);
     }

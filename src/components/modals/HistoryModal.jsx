@@ -7,7 +7,7 @@ import {
 import { HiMiniArrowsUpDown, HiMiniShieldCheck } from "react-icons/hi2";
 import { TbChevronLeft, TbChevronRight } from "react-icons/tb";
 import formatDate from "../../utils/dateFormatter";
-import { loanService } from "../../services/api";
+import { loanService, savingsService } from "../../services/api";
 import NotificationModal from "../common/NotificationModal";
 import { useAuth } from "../../context/AuthContext";
 
@@ -37,18 +37,14 @@ const FinancialHistoryModal = ({
     if (open && id) {
       const fetchData = async () => {
         try {
-          const endpoint =
+          setLoading(true);
+          const response =
             type === "loan"
-              ? `http://localhost:5000/api/loans/${id}`
-              : `http://localhost:5000/api/savings/member/${id}`;
-          const response = await fetch(endpoint);
-          if (!response.ok) {
-            throw new Error("Failed to fetch data");
-          }
-          const result = await response.json();
-          setData(result);
+              ? await loanService.getLoan(id)
+              : await savingsService.getMemberSavings(id);
+          setData(response);
         } catch (error) {
-          setError(error.message);
+          setError(error.message || "Failed to fetch data");
         } finally {
           setLoading(false);
         }
@@ -223,7 +219,7 @@ const FinancialHistoryModal = ({
       setNotificationModalOpen(true);
 
       // Refresh the data
-      const response = await fetch(`http://localhost:5000/api/loans/${id}`);
+      const response = await loanService.getLoan(id);
       if (!response.ok) {
         throw new Error("Failed to fetch updated data");
       }

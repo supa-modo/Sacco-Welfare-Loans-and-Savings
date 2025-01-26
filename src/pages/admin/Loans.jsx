@@ -10,6 +10,7 @@ import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
 import formatDate from "../../utils/dateFormatter";
 import LoanRepaymentButton from "../../components/forms/LoanRepaymentForm";
+import { loanService } from "../../services/api";
 
 const Loans = () => {
   const [loans, setLoans] = useState([]);
@@ -25,14 +26,11 @@ const Loans = () => {
 
   const fetchLoans = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/loans");
-      if (!response.ok) {
-        throw new Error("Failed to fetch loans");
-      }
-      const data = await response.json();
+      setLoading(true);
+      const data = await loanService.getAllLoans();
       setLoans(data);
     } catch (error) {
-      setError(error.message);
+      setError(error.message || "Failed to fetch loans");
     } finally {
       setLoading(false);
     }

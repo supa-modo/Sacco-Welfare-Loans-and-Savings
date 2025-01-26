@@ -219,41 +219,36 @@ const Modal = ({
 
     setIsSubmitting(true);
     try {
-      // Create FormData object for file upload
-      const formDataObj = new FormData();
-      formDataObj.append(
-        "memberId",
-        user?.role === "member" ? user?.memberId : formData.memberId
-      );
-      formDataObj.append("amount", formData.loanAmount);
-      formDataObj.append("purpose", formData.purpose);
-      formDataObj.append("loanTerm", formData.loanTerm);
-      formDataObj.append("interestRate", formData.interestRate);
-      formDataObj.append("employmentContract", formData.employmentContract);
-      formDataObj.append("bankStatements", formData.bankStatements);
-      formDataObj.append("idDocument", formData.idDocument);
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach((key) => {
+        if (key === "documents") {
+          Object.keys(formData.documents).forEach((docKey) => {
+            if (formData.documents[docKey]) {
+              formDataToSend.append(docKey, formData.documents[docKey]);
+            }
+          });
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
 
-      await loanService.createLoan(formDataObj);
+      await loanService.createLoan(formDataToSend);
       setNotificationConfig({
         type: "success",
         title: "Loan Application Submitted",
-        message:
-          "The loan application has been successfully submitted for processing.",
+        message: "Your loan application has been successfully submitted.",
       });
       setNotificationModalOpen(true);
       onClose();
+      if (onLoanAdded) onLoanAdded();
     } catch (error) {
       setNotificationConfig({
         type: "error",
         title: "Submission Failed",
         message:
-          error.response?.data?.error || "Failed to submit loan application.",
-      });
-      setNotificationModalOpen(true);
-      setErrors({
-        submit:
           error.response?.data?.error || "Failed to submit loan application",
       });
+      setNotificationModalOpen(true);
     } finally {
       setIsSubmitting(false);
     }

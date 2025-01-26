@@ -424,48 +424,54 @@ const RepaymentModal = ({
                             ))}
                           </select>
                           {formData.loanId && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            Due Date: {formatDate(memberLoans.find(loan => loan.id === formData.loanId).dueDate)}
-                          </p>
-                        )}
+                            <p className="mt-1 text-sm text-gray-500">
+                              Due Date:{" "}
+                              {formatDate(
+                                memberLoans.find(
+                                  (loan) => loan.id === formData.loanId
+                                ).dueDate
+                              )}
+                            </p>
+                          )}
                         </div>
                       )}
 
                       {/* Amount */}
                       {selectedMember && (
-                      <div className="w-[40%]">
-                        <label className="block text-sm font-bold text-gray-600">
-                          Repayment Amount
-                        </label>
-                        <div className="mt-1 relative rounded-lg shadow-sm">
-                          <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                            <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+                        <div className="w-[40%]">
+                          <label className="block text-sm font-bold text-gray-600">
+                            Repayment Amount
+                          </label>
+                          <div className="mt-1 relative rounded-lg shadow-sm">
+                            <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                              <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                              type="number"
+                              name="amount"
+                              value={formData.amount}
+                              onChange={handleInputChange}
+                              max={getMaxAmount()}
+                              className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
+                                errors.amount
+                                  ? "border-2 border-red-500"
+                                  : "border-gray-300"
+                              } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                              placeholder="Enter repayment amount"
+                            />
                           </div>
-                          <input
-                            type="number"
-                            name="amount"
-                            value={formData.amount}
-                            onChange={handleInputChange}
-                            max={getMaxAmount()}
-                            className={`pl-12 w-full font-semibold text-gray-600 rounded-lg border ${
-                              errors.amount
-                                ? "border-2 border-red-500"
-                                : "border-gray-300"
-                            } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                            placeholder="Enter repayment amount"
-                          />
+                          {errors.amount && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {errors.amount}
+                            </p>
+                          )}
+                          {formData.loanId && (
+                            <p className="mt-1 text-sm text-gray-500">
+                              Maximum payment allowed: $ {getMaxAmount()}
+                            </p>
+                          )}
                         </div>
-                        {errors.amount && (
-                          <p className="mt-1 text-sm text-red-600">
-                            {errors.amount}
-                          </p>
-                        )}
-                        {formData.loanId && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            Maximum payment allowed: $ {getMaxAmount()}
-                          </p>
-                        )}
-                      </div>)}
+                      )}
                     </div>
 
                     {/* Date */}

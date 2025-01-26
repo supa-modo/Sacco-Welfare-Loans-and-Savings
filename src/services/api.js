@@ -1,6 +1,5 @@
 import api from "../utils/api";
 
-
 export const memberService = {
   createMember: async (memberData) => {
     const response = await api.post("/members", memberData);
@@ -30,7 +29,7 @@ export const savingsService = {
       date: groupSavingsData.date,
       month: groupSavingsData.month,
       year: groupSavingsData.year,
-      amount: 1000,
+      amount: groupSavingsData.amount,
       type: "Monthly Contribution",
       notes:
         groupSavingsData.notes ||
@@ -93,19 +92,8 @@ export const loanService = {
     return response.data;
   },
   approveLoan: async (loanId) => {
-    const response = await fetch(`${API_BASE_URL}/loans/${loanId}/approve`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to approve loan");
-    }
-
-    return await response.json();
+    const response = await api.put(`/loans/${loanId}/approve`);
+    return response.data;
   },
 };
 
