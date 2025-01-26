@@ -10,6 +10,7 @@ import FinancialHistoryModal from "../../components/modals/HistoryModal";
 import AddSavingsButton from "../../components/forms/SavingsDepositForm";
 import formatDate from "../../utils/dateFormatter";
 import { useAuth } from "../../context/AuthContext";
+import { savingsService } from "../../services/api";
 
 const MemberSavings = () => {
   const { user } = useAuth();
@@ -21,23 +22,20 @@ const MemberSavings = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchSavingsData();
-  }, [user.memberId]);
+    if (user?.memberId) {
+      fetchSavingsData();
+    }
+  }, [user?.memberId]);
 
   const fetchSavingsData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:5000/api/savings/member/${user.memberId}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch savings data");
-      }
-      const data = await response.json();
+      const data = await savingsService.getMemberSavings(user.memberId);
       setSavingsHistory(data);
       setTransactions(data.transactions || []);
     } catch (error) {
-      setError(error.message);
+      console.error("Error fetching savings:", error);
+      setError(error.response?.data?.error || "Failed to fetch savings data");
     } finally {
       setLoading(false);
     }
@@ -172,7 +170,7 @@ const MemberSavings = () => {
           columns={[
             { header: "Transaction No", accessor: "transactionNo" },
             {
-              header: "Date",
+              header: "Trans. Date",
               accessor: "transactionDate",
               render: (item) => formatDate(item.transactionDate),
             },
@@ -183,8 +181,8 @@ const MemberSavings = () => {
                 <span
                   className={`px-3 py-1 text-xs font-semibold rounded-lg ${
                     item.transactionType === "Deposit"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
+                      ? "bg-green-300 text-green-800"
+                      : "bg-red-300 text-red-800"
                   }`}
                 >
                   {item.transactionType}

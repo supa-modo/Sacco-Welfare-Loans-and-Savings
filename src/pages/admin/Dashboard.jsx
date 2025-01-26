@@ -253,7 +253,6 @@ const Dashboard = () => {
 
       {/* Recent Transactions Table */}
       <div className="   rounded-2xl overflow-hidden">
-       
         <DataTable
           title="Recent Transactions"
           data={dashboardData.recentTransactions}

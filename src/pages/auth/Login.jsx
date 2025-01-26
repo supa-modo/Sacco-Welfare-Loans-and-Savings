@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/AuthContext";
 import bgImage from "../../assets/sacco-bg.jpg";
 import logo from "/logo.png";
-import { HiLockClosed, HiUser } from "react-icons/hi";
-import { FaEye, FaEyeSlash, FaUser } from "react-icons/fa";
-import { CiUser } from "react-icons/ci";
-import { PiUser, PiUserBold } from "react-icons/pi";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { PiUserBold } from "react-icons/pi";
 import { GiPadlock } from "react-icons/gi";
 
 const Login = () => {

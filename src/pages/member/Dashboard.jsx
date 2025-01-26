@@ -21,6 +21,7 @@ import FinancialHistoryModal from "../../components/modals/HistoryModal";
 import DataTable from "../../components/common/DataTable";
 import formatDate from "../../utils/dateFormatter";
 import { useAuth } from "../../context/AuthContext";
+import { loanService, savingsService } from "../../services/api";
 
 const MemberDashboard = () => {
   const { user } = useAuth();
@@ -49,31 +50,27 @@ const MemberDashboard = () => {
   ];
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [user.memberId]);
+    if (user?.memberId) {
+      fetchDashboardData();
+    }
+  }, [user?.memberId]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
 
-      // Fetch loans
-      const loansResponse = await fetch(
-        `http://localhost:5000/api/loans/member/${user.memberId}`
-      );
-      if (!loansResponse.ok) throw new Error("Failed to fetch loans");
-      const loansData = await loansResponse.json();
-      setLoans(loansData);
+      // Fetch loans and savings data in parallel
+      const [loansData, savingsData] = await Promise.all([
+        loanService.getMemberLoans(user.memberId),
+        savingsService.getMemberSavings(user.memberId),
+      ]);
 
-      // Fetch savings
-      const savingsResponse = await fetch(
-        `http://localhost:5000/api/savings/member/${user.memberId}`
-      );
-      if (!savingsResponse.ok) throw new Error("Failed to fetch savings");
-      const savingsData = await savingsResponse.json();
+      setLoans(loansData);
       setSavingsHistory(savingsData);
       setTransactions(savingsData.transactions || []);
     } catch (error) {
-      setError(error.message);
+      console.error("Error fetching dashboard data:", error);
+      setError(error.response?.data?.error || "Failed to fetch dashboard data");
     } finally {
       setLoading(false);
     }

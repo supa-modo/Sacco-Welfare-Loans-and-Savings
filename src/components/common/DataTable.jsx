@@ -2,8 +2,8 @@ import React, { useState, useMemo } from "react";
 import { HiMiniArrowsUpDown } from "react-icons/hi2";
 import { IoMdClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { TbChevronLeft, TbChevronRight, TbTrash } from "react-icons/tb";
-
+import { TbChevronLeft, TbChevronRight } from "react-icons/tb";
+import { FaEye } from "react-icons/fa";
 const DataTable = ({
   title,
   columns,
@@ -160,7 +160,10 @@ const DataTable = ({
         <table className="w-full">
           <thead className="border border-primary-500">
             <tr className="bg-primary-500">
-              <th key="index" className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider">
+              <th
+                key="index"
+                className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider"
+              >
                 #
               </th>
               {columns.map((column) => (
@@ -175,7 +178,10 @@ const DataTable = ({
                   </div>
                 </th>
               ))}
-              <th key="actions" className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider">
+              <th
+                key="actions"
+                className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -195,19 +201,18 @@ const DataTable = ({
                     onClick={() => onRowClick && onRowClick(item)}
                     className="px-6 py-2 text-sm border-b border-gray-200 text-gray-600 cursor-pointer"
                   >
-                    {column.render ? column.render(item) : item[column.accessor || column.key]}
+                    {column.render
+                      ? column.render(item)
+                      : item[column.accessor || column.key]}
                   </td>
                 ))}
                 <td className="px-6 py-2 text-sm border-b border-gray-200">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(item);
-                    }}
+                    onClick={() => {}}
                     className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                     title="Delete"
                   >
-                    <TbTrash className="h-5 w-5" />
+                    <FaEye className="h-5 w-5" />
                   </button>
                 </td>
               </tr>

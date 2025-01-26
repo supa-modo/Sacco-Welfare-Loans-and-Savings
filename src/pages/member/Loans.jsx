@@ -21,22 +21,19 @@ const MemberLoans = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchMemberLoans();
-  }, [user.memberId]);
+    if (user?.memberId) {
+      fetchMemberLoans();
+    }
+  }, [user?.memberId]);
 
   const fetchMemberLoans = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:5000/api/loans/member/${user.memberId}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch loans");
-      }
-      const data = await response.json();
+      const data = await loanService.getMemberLoans(user.memberId);
       setLoans(data);
     } catch (error) {
-      setError(error.message);
+      console.error("Error fetching loans:", error);
+      setError(error.response?.data?.error || "Failed to fetch loans");
     } finally {
       setLoading(false);
     }
