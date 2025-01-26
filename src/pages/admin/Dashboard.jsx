@@ -6,42 +6,79 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import DataTable from "../../components/common/DataTable";
-import loansData from "../../data/loans.json";
-import membersData from "../../data/members.json";
-import savingsData from "../../data/savings.json";
+import { memberService, loanService, savingsService } from "../../services/api";
+import formatDate from "../../utils/dateFormatter";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [members, setMembers] = useState([]);
   const [savings, setSavings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Set the parsed data
-    setMembers(membersData.members || []);
-    setSavings(savingsData.savings || []);
-    setLoans(loansData.loans || []);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        // Fetch all required data in parallel
+        const [membersData, loansData, savingsData] = await Promise.all([
+          memberService.getAllMembers(),
+          loanService.getAllLoans(),
+          savingsService.getAllSavings(),
+        ]);
+
+        setMembers(membersData);
+        setLoans(loansData);
+        setSavings(savingsData);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
-  // Calculate summary statistics
+  // Calculate summary statistics from real data
   const totalMembers = members.length;
   const activeMembersCount = members.filter(
     (m) => m.status === "Active"
   ).length;
   const totalSavingsAmount = members.reduce(
-    (sum, m) => sum + (m.savingsBalance || 0),
+    (sum, m) => sum + (parseFloat(m.savingsBalance) || 0),
     0
   );
   const monthlyContributions = savings
     .filter((s) => s.type === "Monthly Contribution")
-    .reduce((sum, s) => sum + (s.amount || 0), 0);
+    .reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+
+  const activeLoans = loans.filter((loan) => loan.status === "Active");
+  const totalActiveLoanAmount = activeLoans.reduce(
+    (sum, loan) => sum + (parseFloat(loan.amount) || 0),
+    0
+  );
 
   const loanColumns = [
     { key: "id", header: "Loan ID" },
     { key: "memberName", header: "Member Name" },
-    { key: "amount", header: "Amount", render: (item) => `$ ${item.amount}` },
+    {
+      key: "amount",
+      header: "Amount",
+      render: (item) => `$ ${parseFloat(item.amount).toLocaleString()}`,
+    },
     { key: "purpose", header: "Purpose" },
-    { key: "dateIssued", header: "Date Issued" },
-    { key: "dueDate", header: "Due Date" },
+    {
+      key: "dateIssued",
+      header: "Date Issued",
+      render: (item) => formatDate(item.dateIssued),
+    },
+    {
+      key: "dueDate",
+      header: "Due Date",
+      render: (item) => formatDate(item.dueDate),
+    },
     {
       key: "status",
       header: "Status",
@@ -52,7 +89,9 @@ const AdminDashboard = () => {
               ? "bg-green-100 text-green-800"
               : item.status === "Completed"
               ? "bg-blue-100 text-blue-800"
-              : "bg-yellow-100 text-yellow-800"
+              : item.status === "Pending"
+              ? "bg-yellow-100 text-yellow-800"
+              : "bg-red-100 text-red-800"
           }`}
         >
           {item.status}
@@ -61,66 +100,51 @@ const AdminDashboard = () => {
     },
   ];
 
-  const loanFilters = [
-    {
-      key: "status",
-      label: "Filter by Status",
-      options: [
-        { value: "All", label: "All Loans" },
-        { value: "Active", label: "Active" },
-        { value: "Paid", label: "Paid" },
-        { value: "Pending", label: "Pending" },
-        { value: "Rejected", label: "Rejected" },
-      ],
-    },
-  ];
-
   const memberColumns = [
     { key: "id", header: "Member ID" },
     { key: "name", header: "Name" },
     { key: "email", header: "Email" },
     { key: "phone", header: "Phone" },
-    { key: "joinDate", header: "Join Date" },
+    {
+      key: "joinDate",
+      header: "Join Date",
+      render: (item) => formatDate(item.joinDate),
+    },
     {
       key: "status",
       header: "Status",
       render: (item) => (
         <span
           className={`px-2 py-1 text-xs font-medium rounded-full ${
-            item.status === "active"
+            item.status === "Active"
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
           }`}
         >
-          {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+          {item.status}
         </span>
       ),
     },
     {
       key: "savingsBalance",
       header: "Total Savings",
-      render: (item) => `$ ${item.savingsBalance}`,
+      render: (item) => `$ ${parseFloat(item.savingsBalance).toLocaleString()}`,
     },
   ];
 
-  const memberFilters = [
-    {
-      key: "status",
-      label: "Filter by Status",
-      options: [
-        { value: "All", label: "All Members" },
-        { value: "Active", label: "Active Members" },
-        { value: "Inactive", label: "Inactive Members" },
-      ],
-    },
-  ];
-
-  // For Savings component
   const savingsColumns = [
     { key: "memberId", header: "Member ID" },
     { key: "memberName", header: "Name" },
-    { key: "amount", header: "Amount", render: (item) => `$ ${item.amount}` },
-    { key: "date", header: "Date" },
+    {
+      key: "amount",
+      header: "Amount",
+      render: (item) => `$ ${parseFloat(item.amount).toLocaleString()}`,
+    },
+    {
+      key: "date",
+      header: "Date",
+      render: (item) => formatDate(item.date),
+    },
     { key: "type", header: "Type" },
     {
       key: "status",
@@ -139,26 +163,27 @@ const AdminDashboard = () => {
     },
   ];
 
-  const savingsFilters = [
-    {
-      key: "type",
-      label: "Filter by Type",
-      options: [
-        { value: "All", label: "All Savings" },
-        { value: "Monthly Contribution", label: "Monthly Contribution" },
-        { value: "Additional Savings", label: "Additional Savings" },
-      ],
-    },
-    {
-      key: "status",
-      label: "Filter by Status",
-      options: [
-        { value: "Completed", label: "Completed" },
-        { value: "Pending", label: "Pending" },
-        { value: "Failed", label: "Failed" },
-      ],
-    },
-  ];
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 font-semibold text-gray-600">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center text-red-600">
+          <p className="text-xl font-bold">Error loading dashboard data</p>
+          <p className="mt-2">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -174,7 +199,7 @@ const AdminDashboard = () => {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <BanknotesIcon className="h-12 w-12 text-primary-600 " />
+                    <BanknotesIcon className="h-12 w-12 text-primary-600" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -206,14 +231,9 @@ const AdminDashboard = () => {
                       </dt>
                       <dd className="flex items-baseline">
                         <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
-                          {/* Display loans count and total amount */}
-                          {loans.length} -
+                          {activeLoans.length} -{" "}
                           <span className="text-primary-500">
-                            {" "}
-                            ${" "}
-                            {loans
-                              .reduce((total, loan) => total + loan.amount, 0)
-                              .toLocaleString()}
+                            $ {totalActiveLoanAmount.toLocaleString()}
                           </span>
                         </div>
                       </dd>
@@ -238,6 +258,9 @@ const AdminDashboard = () => {
                       <dd className="flex items-baseline">
                         <div className="text-2xl font-bold font-nunito-sans text-gray-600 mt-1">
                           {totalMembers}
+                          <span className="ml-2 text-sm text-gray-500">
+                            ({activeMembersCount} active)
+                          </span>
                         </div>
                       </dd>
                     </dl>
@@ -278,7 +301,19 @@ const AdminDashboard = () => {
             <DataTable
               columns={loanColumns}
               data={loans}
-              filters={loanFilters}
+              filters={[
+                {
+                  key: "status",
+                  label: "Filter by Status",
+                  options: [
+                    { value: "All", label: "All Loans" },
+                    { value: "Active", label: "Active" },
+                    { value: "Completed", label: "Completed" },
+                    { value: "Pending", label: "Pending" },
+                    { value: "Rejected", label: "Rejected" },
+                  ],
+                },
+              ]}
               searchPlaceholder="Search by loan applicant name or loan ID..."
             />
           </div>
@@ -291,7 +326,17 @@ const AdminDashboard = () => {
             <DataTable
               columns={memberColumns}
               data={members}
-              filters={memberFilters}
+              filters={[
+                {
+                  key: "status",
+                  label: "Filter by Status",
+                  options: [
+                    { value: "All", label: "All Members" },
+                    { value: "Active", label: "Active Members" },
+                    { value: "Inactive", label: "Inactive Members" },
+                  ],
+                },
+              ]}
               searchPlaceholder="Search by member name or Member ID..."
             />
           </div>
@@ -304,7 +349,32 @@ const AdminDashboard = () => {
             <DataTable
               columns={savingsColumns}
               data={savings}
-              filters={savingsFilters}
+              filters={[
+                {
+                  key: "type",
+                  label: "Filter by Type",
+                  options: [
+                    { value: "All", label: "All Savings" },
+                    {
+                      value: "Monthly Contribution",
+                      label: "Monthly Contribution",
+                    },
+                    {
+                      value: "Additional Savings",
+                      label: "Additional Savings",
+                    },
+                  ],
+                },
+                {
+                  key: "status",
+                  label: "Filter by Status",
+                  options: [
+                    { value: "All", label: "All Status" },
+                    { value: "Completed", label: "Completed" },
+                    { value: "Pending", label: "Pending" },
+                  ],
+                },
+              ]}
               searchPlaceholder="Search by member name or savings ID..."
             />
           </div>

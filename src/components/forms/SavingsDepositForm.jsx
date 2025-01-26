@@ -13,8 +13,10 @@ import {
 } from "@heroicons/react/24/outline";
 import members from "../../data/members.json";
 import NotificationModal from "../common/NotificationModal";
+import { useAuth } from "../../context/AuthContext";
 
 const AddSavingsButton = ({ onSavingsAdded }) => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
   const [notificationConfig, setNotificationConfig] = useState({
@@ -23,37 +25,44 @@ const AddSavingsButton = ({ onSavingsAdded }) => {
     message: "",
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
+  const handleClick = () => {
+    if (user?.role !== "admin") {
+      setNotificationConfig({
+        type: "error",
+        title: "Access Restricted",
+        message:
+          "Only administrators can record savings deposits. Please contact your administrator for assistance.",
+      });
+      setNotificationModalOpen(true);
+      return;
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    if (onSavingsAdded) {
-      onSavingsAdded();
-    }
+    setIsOpen(true);
   };
 
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
-        className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+        onClick={handleClick}
+        className={`group flex items-center gap-2 px-6 py-3 ${
+          user?.role === "admin"
+            ? "bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700"
+            : "bg-gray-300 cursor-not-allowed"
+        } text-white rounded-lg shadow-lg transition-all duration-300`}
+        // disabled={user?.role !== "admin"}
       >
-        <PlusIcon className="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" />
-        <span className="font-semibold text-[0.9rem]">Record New Savings Deposit</span>
+        <PlusIcon
+          className={`w-5 h-5 transition-transform ${
+            user?.role === "admin" ? "group-hover:rotate-90" : ""
+          } duration-300`}
+        />
+        <span className="font-semibold text-[0.9rem]">
+          Record New Savings Deposit
+        </span>
       </button>
 
       {isOpen && (
         <SavingsModal
-          onClose={handleClose}
+          onClose={() => setIsOpen(false)}
           setNotificationConfig={setNotificationConfig}
           setNotificationModalOpen={setNotificationModalOpen}
         />
@@ -88,10 +97,11 @@ const SavingsModal = ({
     type: "Monthly Contribution",
   });
   const [groupData, setGroupData] = useState({
-    amount: "",
     date: new Date().toISOString().split("T")[0],
     month: new Date().toLocaleString("default", { month: "long" }),
     year: new Date().getFullYear().toString(),
+    amount: "",
+    type: "Monthly Contribution",
     notes: "",
   });
   const [errors, setErrors] = useState({});
@@ -154,9 +164,6 @@ const SavingsModal = ({
         newErrors.amount = "Please enter a valid amount";
       }
     } else {
-      // if (!groupData.amount || groupData.amount <= 0) {
-      //   newErrors.groupAmount = "Please enter a valid amount";
-      // }
       if (!groupData.month) newErrors.month = "Please select a month";
       if (!groupData.year) newErrors.year = "Please select a year";
     }
@@ -185,7 +192,22 @@ const SavingsModal = ({
             "Individual savings transaction has been successfully recorded.",
         });
       } else {
-        await savingsService.recordGroupSavings(groupData);
+        const payload = {
+          date: groupData.date,
+          month: groupData.month,
+          year: groupData.year,
+          type: groupData.type,
+          notes:
+            groupData.notes ||
+            `Monthly Contribution for ${groupData.month} ${groupData.year}`,
+        };
+
+        // Only add amount if it's provided
+        if (groupData.amount) {
+          payload.amount = parseFloat(groupData.amount);
+        }
+
+        await savingsService.recordGroupSavings(payload);
         setNotificationConfig({
           type: "success",
           title: "Group Savings Recorded",
@@ -196,6 +218,7 @@ const SavingsModal = ({
       setNotificationModalOpen(true);
       onClose();
     } catch (error) {
+      console.error("Savings Error:", error);
       setNotificationConfig({
         type: "error",
         title: "Transaction Failed",
@@ -274,45 +297,43 @@ const SavingsModal = ({
                     Select Member
                   </label>
                   <div className="mt-1 relative rounded-lg shadow-sm">
-                      <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
-                        <UserIcon className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`pl-14 w-full font-semibold text-primary-600 rounded-lg border ${
-                          errors.memberId
-                            ? "border-2 border-red-500"
-                            : "border-gray-300"
-                        } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                        placeholder="Search member by name"
-                      />
+                    <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
+                      <UserIcon className="h-5 w-5 text-gray-400" />
                     </div>
-                    {showSuggestions && filteredMembers.length > 0 && (
-                      <div className="absolute z-10 w-[94%] mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
-                        {filteredMembers.map((member) => (
-                          <div
-                            key={member.id}
-                            onClick={() => selectMember(member)}
-                            className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
-                          >
-                            <div className="font-bold">{member.name}</div>
-                            <div className="text-sm font-semibold text-gray-500">
-                              ID: {member.id}
-                            </div>
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className={`pl-14 w-full font-semibold text-primary-600 rounded-lg border ${
+                        errors.memberId
+                          ? "border-2 border-red-500"
+                          : "border-gray-300"
+                      } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                      placeholder="Search member by name"
+                    />
+                  </div>
+                  {showSuggestions && filteredMembers.length > 0 && (
+                    <div className="absolute z-10 w-[94%] mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
+                      {filteredMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          onClick={() => selectMember(member)}
+                          className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
+                        >
+                          <div className="font-bold">{member.name}</div>
+                          <div className="text-sm font-semibold text-gray-500">
+                            ID: {member.id}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    {errors.memberId && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.memberId}
-                      </p>
-                    )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {errors.memberId && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.memberId}
+                    </p>
+                  )}
                 </div>
-
-                
 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
@@ -424,12 +445,12 @@ const SavingsModal = ({
                         <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
-                      disabled
+                        // disabled
                         type="number"
                         name="amount"
                         value={groupData.amount}
                         onChange={(e) => handleInputChange(e, "group")}
-                        className={`pl-12 w-full font-semibold text-gray-600 hover:cursor-not-allowed rounded-lg border ${
+                        className={`pl-12 w-full font-semibold text-gray-400 hover:cursor-not-allowed rounded-lg border ${
                           errors.groupAmount
                             ? "border-2 border-red-500"
                             : "border-gray-300"

@@ -1,13 +1,5 @@
-import axios from "axios";
+import api from "../utils/api";
 
-const API_BASE_URL = "http://localhost:5000/api";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 export const memberService = {
   createMember: async (memberData) => {
@@ -34,7 +26,16 @@ export const savingsService = {
     return response.data;
   },
   recordGroupSavings: async (groupSavingsData) => {
-    const response = await api.post("/savings/group-deposit", groupSavingsData);
+    const response = await api.post("/savings/group-deposit", {
+      date: groupSavingsData.date,
+      month: groupSavingsData.month,
+      year: groupSavingsData.year,
+      amount: 1000,
+      type: "Monthly Contribution",
+      notes:
+        groupSavingsData.notes ||
+        `Monthly Contribution for ${groupSavingsData.month} ${groupSavingsData.year}`,
+    });
     return response.data;
   },
   getMemberSavings: async (memberId) => {

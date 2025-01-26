@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   BanknotesIcon,
   DocumentTextIcon,
@@ -8,32 +8,39 @@ import {
 import DataTable from "../../components/common/DataTable";
 import LoanApplicationButton from "../../components/forms/LoanApplicationForm";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
-import loansData from "../../data/loans.json";
-import loanRepaymentsData from "../../data/loanRepayments.json";
+import formatDate from "../../utils/dateFormatter";
+import { loanService } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
-const MemberLoans = ({ memberId = "M1001" }) => {
+const MemberLoans = () => {
+  const { user } = useAuth();
   const [loans, setLoans] = useState([]);
-  const [selectedLoanId, setSelectedLoanId] = useState(null);
+  const [selectedLoan, setSelectedLoan] = useState(null);
   const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(async () => {
-    // Filter loans for logged-in member
+  useEffect(() => {
+    fetchMemberLoans();
+  }, [user.memberId]);
+
+  const fetchMemberLoans = async () => {
     try {
-      // const response = await fetch(`http://localhost:5000/api/loans/${id}`);
-      const response = await fetch(`http://localhost:5000/api/loans/member/M1001`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch data");
-          }
-          const result = await response.json();
-          setLoans(result);
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:5000/api/loans/member/${user.memberId}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch loans");
+      }
+      const data = await response.json();
+      setLoans(data);
     } catch (error) {
-      
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-    // const memberLoans = loansData.loans.filter(
-    //   (loan) => loan.applicantMemberID === memberId
-    // );
-    // setLoans(memberLoans);
-  }, [memberId]);
+  };
 
   // Calculate statistics for the logged-in member
   const memberStats = {
@@ -41,7 +48,7 @@ const MemberLoans = ({ memberId = "M1001" }) => {
     pendingLoans: loans.filter((loan) => loan.status === "Pending").length,
     totalDue: loans
       .filter((loan) => loan.status === "Active")
-      .reduce((sum, loan) => sum + loan.remainingBalance, 0),
+      .reduce((sum, loan) => sum + parseFloat(loan.remainingBalance), 0),
     overdueLoans: loans.filter((loan) => {
       const dueDate = new Date(loan.dueDate);
       return loan.status === "Active" && dueDate < new Date();
@@ -97,13 +104,34 @@ const MemberLoans = ({ memberId = "M1001" }) => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 font-semibold text-gray-600">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center text-red-600">
+          <p className="text-xl font-bold">Error loading data</p>
+          <p className="mt-2">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex pt-4 justify-between items-center">
         <h1 className="text-3xl font-extrabold text-amber-700">
           My Loan Applications
         </h1>
-        <LoanApplicationButton />
+        <LoanApplicationButton onLoanAdded={fetchMemberLoans} />
       </div>
 
       {/* Stats Grid */}
@@ -141,18 +169,18 @@ const MemberLoans = ({ memberId = "M1001" }) => {
             {
               header: "Amount",
               accessor: "amount",
-              render: (item) => `$ ${item.amount.toLocaleString()}`,
+              render: (item) => `$ ${parseFloat(item.amount).toLocaleString()}`,
             },
             { header: "Purpose", accessor: "purpose" },
             {
               header: "Date Issued",
               accessor: "dateIssued",
-              render: (item) => new Date(item.dateIssued).toLocaleDateString(),
+              render: (item) => formatDate(item.dateIssued) || "Not Issued",
             },
             {
               header: "Due Date",
               accessor: "dueDate",
-              render: (item) => new Date(item.dueDate).toLocaleDateString(),
+              render: (item) => formatDate(item.dueDate),
             },
             {
               header: "Status",
@@ -175,7 +203,7 @@ const MemberLoans = ({ memberId = "M1001" }) => {
             },
           ]}
           onRowClick={(row) => {
-            setSelectedLoanId(row.id);
+            setSelectedLoan(row);
             setIsRepaymentModalOpen(true);
           }}
           filters={loanFilters}
@@ -186,8 +214,7 @@ const MemberLoans = ({ memberId = "M1001" }) => {
           open={isRepaymentModalOpen}
           onClose={() => setIsRepaymentModalOpen(false)}
           type="loan"
-          data={loanRepaymentsData?.loanRepayments[selectedLoanId]}
-          id={selectedLoanId}
+          id={selectedLoan?.id}
         />
       </div>
     </div>

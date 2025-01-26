@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   BanknotesIcon,
   ArrowTrendingUpIcon,
@@ -8,36 +8,61 @@ import {
 import DataTable from "../../components/common/DataTable";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
 import AddSavingsButton from "../../components/forms/SavingsDepositForm";
-import savingsHistoryData from "../../data/savingsHistory.json";
+import formatDate from "../../utils/dateFormatter";
+import { useAuth } from "../../context/AuthContext";
 
-const MemberSavings = ({ memberId = "M1001" }) => {
-  const [savingsHistory, setSavingsHistory] = useState([]);
-  const [selectedTransactionId, setSelectedTransactionId] = useState(null);
+const MemberSavings = () => {
+  const { user } = useAuth();
+  const [savingsHistory, setSavingsHistory] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get member's savings history
-    const memberData = savingsHistoryData.savingsHistory[memberId];
-    if (memberData?.transactions) {
-      setSavingsHistory(memberData.transactions);
+    fetchSavingsData();
+  }, [user.memberId]);
+
+  const fetchSavingsData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:5000/api/savings/member/${user.memberId}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch savings data");
+      }
+      const data = await response.json();
+      setSavingsHistory(data);
+      setTransactions(data.transactions || []);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-  }, [memberId]);
+  };
 
   // Calculate member statistics
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+
   const memberStats = {
-    totalSavings:
-      savingsHistoryData.savingsHistory[memberId]?.memberDetails
-        ?.currentSavingsBalance || 0,
-    monthlyContributions: savingsHistory
-      .filter(
-        (tx) =>
+    totalSavings: savingsHistory?.currentSavingsBalance || 0,
+    monthlyContributions: transactions
+      .filter((tx) => {
+        const txDate = new Date(tx.transactionDate);
+        return (
           tx.transactionType === "Deposit" &&
-          new Date(tx.transactionDate).getMonth() === new Date().getMonth()
-      )
-      .reduce((sum, tx) => sum + tx.amount, 0),
-    withdrawals: savingsHistory
+          txDate.getMonth() === currentMonth &&
+          txDate.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, tx) => sum + parseFloat(tx.amount), 0),
+    withdrawals: transactions
       .filter((tx) => tx.transactionType === "Withdrawal")
-      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0),
+      .reduce((sum, tx) => sum + Math.abs(parseFloat(tx.amount)), 0),
     daysToNextCollection: 5, // This would be calculated based on your collection schedule
   };
 
@@ -84,13 +109,34 @@ const MemberSavings = ({ memberId = "M1001" }) => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 font-semibold text-gray-600">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center text-red-600">
+          <p className="text-xl font-bold">Error loading data</p>
+          <p className="mt-2">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex pt-4 justify-between items-center">
         <h1 className="text-3xl font-extrabold text-amber-700">
           My Savings Account
         </h1>
-        <AddSavingsButton />
+        <AddSavingsButton onSavingsAdded={fetchSavingsData} />
       </div>
 
       {/* Stats Grid */}
@@ -122,45 +168,58 @@ const MemberSavings = ({ memberId = "M1001" }) => {
       {/* DataTable */}
       <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
         <DataTable
-          data={savingsHistory}
+          data={transactions}
           columns={[
             { header: "Transaction No", accessor: "transactionNo" },
             {
               header: "Date",
               accessor: "transactionDate",
-              render: (item) =>
-                new Date(item.transactionDate).toLocaleDateString(),
+              render: (item) => formatDate(item.transactionDate),
             },
-            { header: "Type", accessor: "transactionType" },
+            {
+              header: "Type",
+              accessor: "transactionType",
+              render: (item) => (
+                <span
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg ${
+                    item.transactionType === "Deposit"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {item.transactionType}
+                </span>
+              ),
+            },
             {
               header: "Amount",
               accessor: "amount",
-              render: (item) => `$ ${Math.abs(item.amount).toLocaleString()}`,
+              render: (item) =>
+                `$ ${Math.abs(parseFloat(item.amount)).toLocaleString()}`,
             },
             {
               header: "Balance After",
               accessor: "balanceAfter",
-              render: (item) => `$ ${item.balanceAfter.toLocaleString()}`,
+              render: (item) =>
+                `$ ${parseFloat(item.balanceAfter).toLocaleString()}`,
             },
             { header: "Notes", accessor: "notes" },
           ]}
-        //   onRowClick={(row) => {
-        //     setSelectedTransactionId(row.transactionNo);
-        //     setIsHistoryModalOpen(true);
-        //   }}
+          onRowClick={(row) => {
+            setSelectedTransaction(row);
+            setIsHistoryModalOpen(true);
+          }}
           filters={savingsFilters}
           searchPlaceholder="Search by transaction number or type..."
         />
 
-        {/* <FinancialHistoryModal
+        <FinancialHistoryModal
           open={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
           type="savings"
-          data={savingsHistory.find(
-            (tx) => tx.transactionNo === selectedTransactionId
-          )}
-          id={selectedTransactionId}
-        /> */}
+          data={selectedTransaction}
+          id={selectedTransaction?.transactionNo}
+        />
       </div>
     </div>
   );

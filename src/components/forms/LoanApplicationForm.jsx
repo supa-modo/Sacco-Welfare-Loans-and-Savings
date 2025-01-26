@@ -12,6 +12,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import NotificationModal from "../common/NotificationModal";
+import { useAuth } from "../../context/AuthContext";
 
 const LoanApplicationButton = ({ onLoanAdded }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,10 +77,11 @@ const Modal = ({
   setNotificationConfig,
   setNotificationModalOpen,
 }) => {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    memberId: "",
-    memberName: "",
+    memberId: user?.role === "member" ? user?.member?.memberId : "",
+    memberName: user?.role === "member" ? user?.member?.name : "",
     loanAmount: "",
     loanTerm: "12",
     interestRate: "5",
@@ -159,40 +161,33 @@ const Modal = ({
   const validateForm = () => {
     const newErrors = {};
 
-    if (step === 1) {
-      if (!formData.memberId) {
-        newErrors.memberId = "Please select a member";
-      }
-      if (!formData.loanAmount) {
-        newErrors.loanAmount = "Loan amount is required";
-      } else if (formData.loanAmount < 200) {
-        newErrors.loanAmount = "Minimum loan amount is $ 500";
-      } else if (formData.loanAmount > 20000) {
-        newErrors.loanAmount = "Maximum loan amount is $ 20,000";
-      }
+    // Only validate member selection for admin users
+    if (user?.role === "admin" && !formData.memberId) {
+      newErrors.memberId = "Please select a member";
+    }
 
-      if (!formData.interestRate) {
-        newErrors.interestRate = "Interest rate is required";
-      } else if (formData.interestRate < 1) {
-        newErrors.interestRate = "Minimum interest rate is 1%";
-      } else if (formData.interestRate > 100) {
-        newErrors.interestRate = "Maximum interest rate is 100%";
-      }
+    if (!formData.loanAmount) {
+      newErrors.loanAmount = "Please enter loan amount";
+    } else if (
+      isNaN(formData.loanAmount) ||
+      parseFloat(formData.loanAmount) <= 0
+    ) {
+      newErrors.loanAmount = "Please enter a valid loan amount";
+    }
 
-      if (!formData.purpose) {
-        newErrors.purpose = "Loan purpose is required";
-      }
+    if (!formData.purpose) {
+      newErrors.purpose = "Please enter loan purpose";
     }
 
     if (step === 2) {
       if (!formData.employmentContract) {
-        newErrors.employmentContract = "Pay slip is required";
+        newErrors.employmentContract = "Please upload employment contract";
       }
       if (!formData.bankStatements) {
-        newErrors.bankStatements = "Bank statements are required";
+        newErrors.bankStatements = "Please upload bank statements";
       }
       if (!formData.idDocument) {
-        newErrors.idDocument = "ID document is required";
+        newErrors.idDocument = "Please upload ID document";
       }
     }
 
@@ -226,11 +221,14 @@ const Modal = ({
     try {
       // Create FormData object for file upload
       const formDataObj = new FormData();
-      formDataObj.append("memberId", formData.memberId);
+      formDataObj.append(
+        "memberId",
+        user?.role === "member" ? user?.memberId : formData.memberId
+      );
       formDataObj.append("amount", formData.loanAmount);
       formDataObj.append("purpose", formData.purpose);
       formDataObj.append("loanTerm", formData.loanTerm);
-      formDataObj.append("interestRate", formData.interestRate)
+      formDataObj.append("interestRate", formData.interestRate);
       formDataObj.append("employmentContract", formData.employmentContract);
       formDataObj.append("bankStatements", formData.bankStatements);
       formDataObj.append("idDocument", formData.idDocument);
@@ -245,7 +243,6 @@ const Modal = ({
       setNotificationModalOpen(true);
       onClose();
     } catch (error) {
-
       setNotificationConfig({
         type: "error",
         title: "Submission Failed",
@@ -337,34 +334,45 @@ const Modal = ({
                         <div className="absolute inset-y-0 left-2 pl-3 flex items-center pointer-events-none">
                           <UserIcon className="h-5 w-5 text-gray-400" />
                         </div>
-                        <input
-                          type="text"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className={`pl-14 w-full font-bold text-primary-600 rounded-lg border ${
-                            errors.memberId
-                              ? "border-2 border-red-500"
-                              : "border-gray-300"
-                          } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
-                          placeholder="Search member by name"
-                        />
+                        {user?.role === "member" ? (
+                          <input
+                            type="text"
+                            value={formData.memberName}
+                            disabled
+                            className="pl-14 w-full font-bold text-primary-600 rounded-lg border border-gray-300 bg-gray-100 shadow-sm focus:outline-none h-11 cursor-not-allowed"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={`pl-14 w-full font-bold text-primary-600 rounded-lg border ${
+                              errors.memberId
+                                ? "border-2 border-red-500"
+                                : "border-gray-300"
+                            } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
+                            placeholder="Search member by name"
+                          />
+                        )}
                       </div>
-                      {showSuggestions && filteredMembers.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
-                          {filteredMembers.map((member) => (
-                            <div
-                              key={member.id}
-                              onClick={() => selectMember(member)}
-                              className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
-                            >
-                              <div className="font-bold">{member.name}</div>
-                              <div className="text-sm font-semibold text-gray-500">
-                                ID: {member.id}
+                      {user?.role !== "member" &&
+                        showSuggestions &&
+                        filteredMembers.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 font-nunito-sans text-primary-600 bg-white rounded-lg shadow-lg border border-gray-200">
+                            {filteredMembers.map((member) => (
+                              <div
+                                key={member.id}
+                                onClick={() => selectMember(member)}
+                                className="px-10 py-2 hover:bg-gray-200 cursor-pointer"
+                              >
+                                <div className="font-bold">{member.name}</div>
+                                <div className="text-sm font-semibold text-gray-500">
+                                  ID: {member.id}
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        )}
                       {errors.memberId && (
                         <p className="mt-1 text-sm text-red-600">
                           {errors.memberId}
