@@ -95,6 +95,10 @@ export const loanService = {
     const response = await api.put(`/loans/${loanId}/approve`);
     return response.data;
   },
+  rejectLoan: async (loanId) => {
+    const response = await api.put(`/loans/${loanId}/reject`);
+    return response.data;
+  },
 };
 
 export default api;

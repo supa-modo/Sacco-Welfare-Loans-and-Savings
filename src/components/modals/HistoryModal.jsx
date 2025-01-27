@@ -210,7 +210,7 @@ const FinancialHistoryModal = ({
 
   const handleLoanApproval = async () => {
     try {
-      await loanService.approveLoan(id);
+      const response = await loanService.approveLoan(id);
       setNotificationConfig({
         type: "success",
         title: "Loan Approved",
@@ -219,17 +219,36 @@ const FinancialHistoryModal = ({
       setNotificationModalOpen(true);
 
       // Refresh the data
-      const response = await loanService.getLoan(id);
-      if (!response.ok) {
-        throw new Error("Failed to fetch updated data");
-      }
-      const result = await response.json();
-      setData(result);
+      const updatedLoan = await loanService.getLoan(id);
+      setData(updatedLoan);
     } catch (error) {
       setNotificationConfig({
         type: "error",
         title: "Approval Failed",
         message: error.response?.data?.error || "Failed to approve the loan.",
+      });
+      setNotificationModalOpen(true);
+    }
+  };
+
+  const handleLoanRejection = async () => {
+    try {
+      const response = await loanService.rejectLoan(id);
+      setNotificationConfig({
+        type: "success",
+        title: "Success",
+        message: response.message || "The loan has been rejected.",
+      });
+      setNotificationModalOpen(true);
+
+      // Refresh the data
+      const updatedLoan = await loanService.getLoan(id);
+      setData(updatedLoan);
+    } catch (error) {
+      setNotificationConfig({
+        type: "error",
+        title: "Rejection Failed",
+        message: error.response?.data?.error || "Failed to reject the loan.",
       });
       setNotificationModalOpen(true);
     }
@@ -245,10 +264,19 @@ const FinancialHistoryModal = ({
     setNotificationModalOpen(true);
   };
 
+  const showRejectionConfirmation = () => {
+    setNotificationConfig({
+      type: "confirm",
+      title: "Confirm Loan Rejection",
+      message:
+        "Are you sure you want to reject this loan application? This action cannot be undone.",
+      onConfirm: handleLoanRejection,
+    });
+    setNotificationModalOpen(true);
+  };
+
   return (
-    <div
-      className={`fixed inset-0 z-50 overflow-y-auto ${open ? "" : "hidden"}`}
-    >
+    <div className={`fixed inset-0 z-50 ${open ? "" : "hidden"}`}>
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 transition-opacity" onClick={onClose}>
           <div className="absolute inset-0 bg-black/55 backdrop-blur-sm"></div>
@@ -256,7 +284,7 @@ const FinancialHistoryModal = ({
 
         {/* Modal Container */}
         <div
-          className="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-12 sm:align-middle md:max-w-7xl sm:w-full"
+          className="inline-block bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-5 sm:align-middle md:max-w-7xl sm:w-full"
           style={{ maxHeight: "92vh" }} // Set max height to 80% of viewport height
         >
           {/* Header Section */}
@@ -371,7 +399,7 @@ const FinancialHistoryModal = ({
                       </div>
 
                       {user?.role === "admin" && (
-                        <div className="mt-6">
+                        <div className="mt-6 flex gap-4">
                           <button
                             onClick={showApprovalConfirmation}
                             disabled={data?.status !== "Pending"}
@@ -387,7 +415,25 @@ const FinancialHistoryModal = ({
                             }
                           >
                             <HiMiniShieldCheck size={22} />
-                            <span>Approve this Loan</span>
+                            <span>Approve Loan</span>
+                          </button>
+
+                          <button
+                            onClick={showRejectionConfirmation}
+                            disabled={data?.status !== "Pending"}
+                            className={`px-6 py-2 flex items-center space-x-2  rounded-lg font-semibold transition-all ${
+                              data?.status === "Pending"
+                                ? "bg-red-500 text-white hover:bg-red-600"
+                                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            }`}
+                            title={
+                              data?.status !== "Pending"
+                                ? "This loan has already been processed"
+                                : "Reject this loan"
+                            }
+                          >
+                            <XMarkIcon className="h-6 w-6" />
+                            <span>Reject</span>
                           </button>
                         </div>
                       )}

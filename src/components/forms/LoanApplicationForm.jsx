@@ -23,17 +23,6 @@ const LoanApplicationButton = ({ onLoanAdded }) => {
     message: "",
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
   const handleClose = () => {
     setIsOpen(false);
     if (onLoanAdded) {
@@ -49,7 +38,7 @@ const LoanApplicationButton = ({ onLoanAdded }) => {
       >
         <PlusIcon className="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" />
         <span className="font-semibold text-[0.9rem]">
-          New Loan Application
+          New loan Application
         </span>
       </button>
 
@@ -82,7 +71,7 @@ const Modal = ({
   const [formData, setFormData] = useState({
     memberId: user?.role === "member" ? user?.member?.memberId : "",
     memberName: user?.role === "member" ? user?.member?.name : "",
-    loanAmount: "",
+    amount: "",
     loanTerm: "12",
     interestRate: "5",
     purpose: "",
@@ -166,13 +155,10 @@ const Modal = ({
       newErrors.memberId = "Please select a member";
     }
 
-    if (!formData.loanAmount) {
-      newErrors.loanAmount = "Please enter loan amount";
-    } else if (
-      isNaN(formData.loanAmount) ||
-      parseFloat(formData.loanAmount) <= 0
-    ) {
-      newErrors.loanAmount = "Please enter a valid loan amount";
+    if (!formData.amount) {
+      newErrors.amount = "Please enter loan amount";
+    } else if (isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
+      newErrors.amount = "Please enter a valid loan amount";
     }
 
     if (!formData.purpose) {
@@ -202,7 +188,7 @@ const Modal = ({
   };
 
   const calculateMonthlyPayment = () => {
-    const principal = parseFloat(formData.loanAmount) || 0;
+    const principal = parseFloat(formData.amount) || 0;
     const numberOfPayments = parseInt(formData.loanTerm) || 12;
     const annualInterestRate = parseFloat(formData.interestRate) || 15;
     const monthlyInterestRate = annualInterestRate / 100 / 12;
@@ -220,19 +206,28 @@ const Modal = ({
     setIsSubmitting(true);
     try {
       const formDataToSend = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (key === "documents") {
-          Object.keys(formData.documents).forEach((docKey) => {
-            if (formData.documents[docKey]) {
-              formDataToSend.append(docKey, formData.documents[docKey]);
-            }
-          });
-        } else {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
+      formDataToSend.append("memberId", formData.memberId);
+      formDataToSend.append("amount", formData.amount);
+      formDataToSend.append("purpose", formData.purpose);
+      formDataToSend.append("loanTerm", formData.loanTerm);
+      formDataToSend.append("interestRate", formData.interestRate);
+
+      // Append documents
+      if (formData.employmentContract) {
+        formDataToSend.append(
+          "employmentContract",
+          formData.employmentContract
+        );
+      }
+      if (formData.bankStatements) {
+        formDataToSend.append("bankStatements", formData.bankStatements);
+      }
+      if (formData.idDocument) {
+        formDataToSend.append("idDocument", formData.idDocument);
+      }
 
       await loanService.createLoan(formDataToSend);
+
       setNotificationConfig({
         type: "success",
         title: "Loan Application Submitted",
@@ -240,8 +235,8 @@ const Modal = ({
       });
       setNotificationModalOpen(true);
       onClose();
-      if (onLoanAdded) onLoanAdded();
     } catch (error) {
+      console.error("Loan submission error:", error);
       setNotificationConfig({
         type: "error",
         title: "Submission Failed",
@@ -276,9 +271,15 @@ const Modal = ({
           </button>
 
           <div className="p-6 border-b border-gray-200 text-center">
-            <h1 className="text-2xl font-extrabold text-primary-600">
-              New Loan Application
-            </h1>
+            {user?.role === "member" ? (
+              <h1 className="text-2xl font-extrabold text-primary-600">
+                Apply for a Loan
+              </h1>
+            ) : (
+              <h1 className="text-2xl font-extrabold text-primary-600">
+                New Loan Application
+              </h1>
+            )}
 
             <p className="mt-1 text-gray-500 font-semibold font-nunito-sans">
               Complete the form and steps below to apply for a loan
@@ -417,20 +418,20 @@ const Modal = ({
                         </div>
                         <input
                           type="number"
-                          name="loanAmount"
-                          value={formData.loanAmount}
+                          name="amount"
+                          value={formData.amount}
                           onChange={handleInputChange}
                           className={`pl-14 w-full font-semibold font-sans text-gray-500 rounded-lg border ${
-                            errors.loanAmount
+                            errors.amount
                               ? "border-2 border-red-500"
                               : "border-gray-300"
                           } shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-11`}
                           placeholder="Enter loan amount"
                         />
                       </div>
-                      {errors.loanAmount && (
+                      {errors.amount && (
                         <p className="mt-1 text-sm text-red-600">
-                          {errors.loanAmount}
+                          {errors.amount}
                         </p>
                       )}
                     </div>
@@ -635,7 +636,7 @@ const Modal = ({
                               Amount:
                             </span>
                             <span className="text-sm font-bold text-gray-600">
-                              $ {formData.loanAmount}
+                              $ {formData.amount}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -676,15 +677,15 @@ const Modal = ({
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
                             Employment Letter / Contract -{" "}
-                            {formData.employmentContract.name}
+                            {formData.employmentContract?.name}
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            Bank Statements - {formData.bankStatements.name}
+                            Bank Statements - {formData.bankStatements?.name}
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <DocumentTextIcon className="h-5 w-5 mr-2" />
-                            ID Document - {formData.idDocument.name}
+                            ID Document - {formData.idDocument?.name}
                           </div>
                         </div>
                       </div>

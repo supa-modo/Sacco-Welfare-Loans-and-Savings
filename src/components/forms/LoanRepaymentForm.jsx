@@ -55,8 +55,8 @@ const LoanRepaymentButton = ({ onRepaymentAdded }) => {
       {isOpen && (
         <RepaymentModal
           onClose={handleClose}
-          setNotificationConfig={setNotificationConfig}
-          setNotificationModalOpen={setNotificationModalOpen}
+          setParentNotificationConfig={setNotificationConfig}
+          setParentNotificationModalOpen={setNotificationModalOpen}
         />
       )}
 
@@ -73,8 +73,8 @@ const LoanRepaymentButton = ({ onRepaymentAdded }) => {
 
 const RepaymentModal = ({
   onClose,
-  setNotificationConfig,
-  setNotificationModalOpen,
+  setParentNotificationConfig,
+  setParentNotificationModalOpen,
 }) => {
   const [mode, setMode] = useState("individual");
   const [searchTerm, setSearchTerm] = useState("");
@@ -268,29 +268,32 @@ const RepaymentModal = ({
           notes: formData.notes,
         });
 
-        setNotificationConfig({
+        setParentNotificationConfig({
           type: "success",
           title: "Repayment Recorded",
           message: "The loan repayment has been successfully recorded.",
         });
       } else {
         await loanService.recordGroupRepayment(groupData);
-        setNotificationConfig({
+
+        setParentNotificationConfig({
           type: "success",
           title: "Group Repayment Recorded",
           message:
             "Monthly deductions have been successfully processed for all active loans.",
         });
       }
-      setNotificationModalOpen(true);
+
       onClose();
+
+      setParentNotificationModalOpen(true);
     } catch (error) {
-      setNotificationConfig({
+      setParentNotificationConfig({
         type: "error",
         title: "Repayment Failed",
         message: error.response?.data?.error || "Failed to record repayment",
       });
-      setNotificationModalOpen(true);
+      setParentNotificationModalOpen(true);
       setErrors({
         submit: error.response?.data?.error || "Failed to record repayment",
       });

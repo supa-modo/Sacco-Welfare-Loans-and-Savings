@@ -310,6 +310,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                       </h4>
                     </div>
                     <DataTable
+                      showActions={false}
                       data={loans}
                       columns={[
                         { header: "Loan ID", accessor: "id" },
@@ -368,6 +369,7 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                         </h4>
                       </div>
                       <DataTable
+                        showActions={false}
                         data={savings.transactions}
                         columns={[
                           {

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import api from "../utils/api";
 
 const AuthContext = createContext(null);
 const API_URL = "http://localhost:5000/api"; // Update with your backend URL
@@ -61,10 +62,10 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post(`${API_URL}/users/register`, {
+      const response = await api.post(`/users/register`, {
         userEmail: userData.email,
         password: userData.password,
-        role: "member", // Default role for registration
+        memberId: userData.memberId,
       });
 
       return {

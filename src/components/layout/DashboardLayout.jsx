@@ -12,7 +12,7 @@ const DashboardLayout = ({ isAdmin }) => {
   };
 
   return (
-    <div className={`flex h-screen ${darkMode ? "dark" : ""}`}>
+    <div className={`flex h-screen overflow-hidden${darkMode ? "dark" : ""}`}>
       <Sidebar
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
@@ -20,7 +20,7 @@ const DashboardLayout = ({ isAdmin }) => {
       />
 
       <main
-        className={`flex-1 overflow-auto p-8 ${
+        className={`flex-1 overflow-auto p-4 ${
           darkMode ? "bg-gray-900 text-white" : "bg-gradient-to-br from-amber-50 via-gray-100 to-primary-50"
         }`}
       >

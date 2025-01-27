@@ -1,20 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash, FaUser } from "react-icons/fa";
-import { GiPadlock } from "react-icons/gi";
-import bgImage from "../../assets/sacco-bg.jpg";
-import logo from "/logo.png";
-import { MdLock, MdOutlinePhone } from "react-icons/md";
-import { HiMiniDevicePhoneMobile } from "react-icons/hi2";
-import { TbMailFilled } from "react-icons/tb";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { MdLock } from "react-icons/md";
 import { PiIdentificationBadgeDuotone } from "react-icons/pi";
 import { useAuth } from "../../context/AuthContext";
+import bgImage from "../../assets/sacco-bg.jpg";
+import logo from "/logo.png";
+import userService from "../../services/api/userService";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registerError, setRegisterError] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
 
@@ -22,10 +21,46 @@ const Register = () => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm();
 
   const password = watch("password");
+  const memberId = watch("memberId");
+  const email = watch("email");
+
+  // Validate Member ID format and fetch member details
+  useEffect(() => {
+    const validateMemberId = async () => {
+      if (memberId) {
+        // Reset any previous errors
+        setRegisterError("");
+        setMemberEmail("");
+
+        // Validate format (M followed by 6 characters)
+        const memberIdRegex = /^M\d{6}$/;
+        if (!memberIdRegex.test(memberId)) {
+          setRegisterError("Member ID must be in the format M123456");
+          return;
+        }
+
+        try {
+          const response = await userService.checkMemberId(memberId);
+          setMemberEmail(response.email);
+          setValue("email", response.email);
+        } catch (error) {
+          setRegisterError(
+            error.response?.data?.error ||
+              "Invalid Member ID, check your ID and try again"
+          );
+          setMemberEmail("");
+          setValue("email", "");
+        }
+      }
+    };
+
+    validateMemberId();
+  }, [memberId, setValue]);
 
   const onSubmit = async (data) => {
     try {
@@ -34,13 +69,18 @@ const Register = () => {
         return;
       }
 
+      if (!memberEmail) {
+        setRegisterError("Please enter a valid Member ID to get your email");
+        return;
+      }
+
       const result = await registerUser({
-        email: data.email,
+        email: memberEmail,
         password: data.password,
+        memberId: data.memberId,
       });
 
       if (result.success) {
-        // Registration successful, redirect to login
         navigate("/login", {
           state: {
             message:
@@ -58,14 +98,10 @@ const Register = () => {
   return (
     <div
       className="relative min-h-screen flex items-center justify-center bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-      }}
+      style={{ backgroundImage: `url(${bgImage})` }}
     >
-      {/* Overlay */}
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
 
-      {/* Content */}
       <div className="relative z-10 max-w-xl w-full space-y-8 py-8 px-12 bg-white/80 dark:bg-gray-800/90 rounded-2xl shadow-xl">
         <div className="text-center">
           <img src={logo} alt="sacco-logo" className="w-24 h-24 mx-auto" />
@@ -78,79 +114,64 @@ const Register = () => {
         </div>
 
         <form className="mt-4 space-y-5" onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            {/* Email Input */}
-            <div className="md:col-span-3">
-              <label
-                htmlFor="email"
-                className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300"
-              >
-                Email
-              </label>
-              <div className="relative">
-                <TbMailFilled className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-5 w-5" />
-                <input
-                  id="email"
-                  type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: "Invalid email address",
-                    },
-                  })}
-                  className="input-field items-center mt-1 pl-11 font-semibold text-gray-600 dark:text-gray-400 text-base py-[0.6rem]"
-                  placeholder="example@email.com"
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* Phone Input */}
-            <div className="md:col-span-2">
-              <label
-                htmlFor="phone"
-                className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300"
-              >
+          {/* Error Display */}
+          {registerError && (
+            <div className=" text-sm text-red-600">{registerError}</div>
+          )}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Member ID Input */}
+            <div>
+              <label className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300">
                 Member ID
               </label>
               <div className="relative">
                 <PiIdentificationBadgeDuotone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-6 w-6" />
                 <input
-                  id="phone"
-                  type="tel"
-                  inputMode="numeric"
-                  {...register("phone", {
-                    required: "Phone number is required",
-                  
+                  type="text"
+                  {...register("memberId", {
+                    required: "Member ID is required",
+                    pattern: {
+                      value: /^M\d{6}$/,
+                      message: "Member ID must be in format M111111",
+                    },
                   })}
                   className="input-field items-center mt-1 pl-12 font-semibold text-gray-600 dark:text-gray-400 text-base py-[0.6rem]"
-                  placeholder="Welfare no."
+                  placeholder="Enter your Member ID"
                 />
               </div>
-              {errors.phone && (
+              {errors.memberId && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.phone.message}
+                  {errors.memberId.message}
                 </p>
               )}
             </div>
+
+            {/* Email Display */}
+            <div>
+              <label className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300">
+                Email
+              </label>
+              <div className="">
+                <input
+                  type="text"
+                  {...register("email", {
+                    required: "Email is required",
+                  })}
+                  className="input-field mt-1 pl-4 font-semibold text-gray-600 bg-gray-100 cursor-not-allowed w-full py-[0.6rem] placeholder:text-red-300 placeholder:font-normal"
+                  placeholder="Automatic from member ID"
+                />
+              </div>
+            </div>
           </div>
 
+          {/* Password Input */}
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300"
-            >
+            <label className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300">
               Password
             </label>
             <div className="relative">
               <MdLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-5 w-5" />
               <input
-                id="password"
                 type={showPassword ? "text" : "password"}
                 {...register("password", {
                   required: "Password is required",
@@ -181,24 +202,21 @@ const Register = () => {
             )}
           </div>
 
+          {/* Confirm Password Input */}
           <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300"
-            >
+            <label className="block text-sm font-bold pl-2 text-gray-500 dark:text-gray-300">
               Confirm Password
             </label>
             <div className="relative">
               <MdLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-5 w-5" />
               <input
-                id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 {...register("confirmPassword", {
                   required: "Confirm Password is required",
                   validate: (value) =>
                     value === password || "Passwords do not match",
                 })}
-                className="input-field mt-1 pl-12 font-semibold  text-gray-600 dark:text-gray-400 py-[0.6rem]"
+                className="input-field mt-1 pl-12 font-semibold text-gray-600 dark:text-gray-400 py-[0.6rem]"
                 placeholder="Re-enter your password"
               />
               <button
@@ -220,6 +238,7 @@ const Register = () => {
             )}
           </div>
 
+          {/* Terms and Conditions */}
           <div className="flex pl-3 items-center">
             <input
               id="terms"

@@ -204,7 +204,7 @@ const MemberDashboard = () => {
     <div className="min-h-screen">
       <div className="mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-500">
+          <h1 className="text-3xl font-extrabold text-amber-700">
             Welcome back,{" "}
             <span className="text-primary-500">
               {user?.member?.name || "Member"}
@@ -323,7 +323,7 @@ const MemberDashboard = () => {
           </div>
 
           {/* Loans DataTable */}
-          <div className="col-span-3 px-4 sm:px-6 lg:px-8 pb-8 w-full max-w-9xl mx-auto">
+          <div className="col-span-3 px-4 pb-8 w-full max-w-9xl mx-auto">
             <h1 className="text-2xl font-extrabold mb-3 text-amber-700">
               Your Loan Applications
             </h1>
@@ -408,10 +408,10 @@ const MemberDashboard = () => {
                   accessor: "transactionType",
                   render: (item) => (
                     <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-lg ${
+                      className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
                         item.transactionType === "Deposit"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-primary-300 text-green-800"
+                          : "bg-red-400 text-red-800"
                       }`}
                     >
                       {item.transactionType}

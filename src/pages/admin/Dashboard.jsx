@@ -251,6 +251,11 @@ const Dashboard = () => {
         .length,
     },
     {
+      name: "Rejected",
+      value: dashboardData.loans.filter((loan) => loan.status === "Rejected")
+        .length,
+    },
+    {
       name: "Defaulted",
       value: dashboardData.loans.filter((loan) => loan.status === "Defaulted")
         .length,
@@ -263,7 +268,8 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-amber-700">
-            Welcome back, {user?.name || "Admin"}
+            Welcome back,{" "}
+            <span className="text-primary-500">{user?.name || "Admin"}</span>
           </h1>
           <p className="text-gray-500 mt-2">
             Here's what's happening with the welfare group today.
@@ -389,11 +395,11 @@ const Dashboard = () => {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
         {/* Financial Trends Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+        <div className="lg:col-span-2 bg-gradient-to-br from-amber-50 via-gray-100 to-primary-50 p-6 rounded-[1.25rem] border border-gray-300  shadow-sm">
+          <h3 className="font-nunito-sans font-extrabold uppercase text-amber-700 mb-4">
             Financial Trends
-          </h2>
-          <div className="h-80">
+          </h3>
+          <div className="h-80 font-nunito-sans font-semibold text-[0.92rem]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dashboardData.monthlyStats}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -431,11 +437,11 @@ const Dashboard = () => {
         </div>
 
         {/* Loan Status Distribution */}
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+        <div className="bg-gradient-to-br from-amber-50 via-gray-100 to-primary-50 p-6 rounded-[1.25rem] border border-gray-300 shadow-sm">
+          <h3 className="font-nunito-sans font-extrabold uppercase text-amber-700 ">
             Loan Status Distribution
-          </h2>
-          <div className="h-80">
+          </h3>
+          <div className="h-80 font-nunito-sans font-semibold text-[0.92rem]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -464,13 +470,79 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
-            Recent Transactions
-          </h2>
+      {/* Active Loans Table */}
+      <div className="bg-gradient-to-br from-primary-50 via-gray-100 to-white rounded-[1.25rem] border border-gray-200 shadow-inner overflow-hidden">
+        <div className="px-8 pb-10 pt-8">
           <DataTable
+            title="Active Loan Applications"
+            data={dashboardData.activeLoans}
+            columns={[
+              {
+                header: "Loan ID",
+                accessor: "id",
+              },
+              {
+                header: "Applicant Name",
+                accessor: "member.name",
+                render: (item) => item.member.name,
+              },
+              {
+                header: "Loan Amount",
+                accessor: "amount",
+                render: (item) =>
+                  `$${parseFloat(item.amount).toLocaleString()}`,
+              },
+              {
+                header: "Balance",
+                accessor: "remainingBalance",
+                render: (item) =>
+                  `$${parseFloat(item.remainingBalance).toLocaleString()}`,
+              },
+              {
+                header: "Issue Date",
+                accessor: "dateIssued",
+                render: (item) => formatDate(item.dateIssued),
+              },
+              {
+                header: "Due Date",
+                accessor: "dueDate",
+                render: (item) => formatDate(item.dueDate),
+              },
+              {
+                header: "% Paid",
+                accessor: "remainingBalance",
+                render: (item) => {
+                  const totalAmount = parseFloat(item.amount);
+                  const remainingBalance = parseFloat(item.remainingBalance);
+                  const percentagePaid =
+                    ((totalAmount - remainingBalance) / totalAmount) * 100;
+                  return (
+                    <div className="flex items-center">
+                      <div className="w-full bg-gray-300 rounded-full h-2.5 mr-2">
+                        <div
+                          className="bg-primary-600 h-2.5 rounded-full"
+                          style={{ width: `${percentagePaid}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-[0.8rem] font-bold text-amber-600 font-nunito-sans">
+                        {percentagePaid.toFixed(1)}%
+                      </span>
+                    </div>
+                  );
+                },
+              },
+            ]}
+            onRowClick={(item) => handleRowClick(item, "loan")}
+            searchPlaceholder="Search active loans..."
+          />
+        </div>
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="bg-gradient-to-br from-primary-50 via-gray-100 to-white rounded-[1.25rem] border border-gray-200 shadow-inner overflow-hidden">
+        <div className="px-8 pb-10 pt-8">
+          <DataTable
+            title="Recent Transactions"
             data={dashboardData.recentTransactions}
             columns={[
               {
@@ -504,52 +576,6 @@ const Dashboard = () => {
               )
             }
             searchPlaceholder="Search transactions..."
-          />
-        </div>
-      </div>
-
-      {/* Active Loans Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
-            Active Loan Applications
-          </h2>
-          <DataTable
-            data={dashboardData.activeLoans}
-            columns={[
-              {
-                header: "Member",
-                accessor: "member.name",
-              },
-              {
-                header: "Loan Amount",
-                accessor: "amount",
-                render: (item) =>
-                  `$${parseFloat(item.amount).toLocaleString()}`,
-              },
-              {
-                header: "Balance",
-                accessor: "remainingBalance",
-                render: (item) =>
-                  `$${parseFloat(item.remainingBalance).toLocaleString()}`,
-              },
-              {
-                header: "Issue Date",
-                accessor: "dateIssued",
-                render: (item) => formatDate(item.dateIssued),
-              },
-              {
-                header: "Due Date",
-                accessor: "dueDate",
-                render: (item) => formatDate(item.dueDate),
-              },
-              {
-                header: "Status",
-                accessor: "status",
-              },
-            ]}
-            onRowClick={(item) => handleRowClick(item, "loan")}
-            searchPlaceholder="Search active loans..."
           />
         </div>
       </div>

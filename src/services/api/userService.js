@@ -6,6 +6,11 @@ const userService = {
     return response.data;
   },
 
+  checkMemberId: async (memberId) => {
+    const response = await api.get(`/users/check-member/${memberId}`);
+    return response.data;
+  },
+
   createUser: async (userData) => {
     const response = await api.post("/users/register", userData);
     return response.data;

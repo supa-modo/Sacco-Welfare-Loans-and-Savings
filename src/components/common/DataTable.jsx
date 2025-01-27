@@ -6,6 +6,7 @@ import { TbChevronLeft, TbChevronRight } from "react-icons/tb";
 import { FaEye } from "react-icons/fa";
 const DataTable = ({
   title,
+  showActions = true,
   columns,
   data,
   filters,
@@ -106,7 +107,7 @@ const DataTable = ({
       {/* Header Section */}
       <div className="bg-white shadow-md border-t border-gray-100 rounded-2xl flex items-center justify-between py-4 px-6 space-x-4">
         {title && (
-          <h3 className="font-nunito-sans font-extrabold uppercase text-amber-700 text-[17pxs] ">
+          <h3 className="font-nunito-sans font-extrabold uppercase text-amber-700 ">
             {title}
           </h3>
         )}
@@ -178,12 +179,14 @@ const DataTable = ({
                   </div>
                 </th>
               ))}
-              <th
-                key="actions"
-                className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider"
-              >
-                Actions
-              </th>
+              {showActions && (
+                <th
+                  key="actions"
+                  className="px-6 py-5 text-left text-sm font-semibold text-white uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -206,15 +209,17 @@ const DataTable = ({
                       : item[column.accessor || column.key]}
                   </td>
                 ))}
-                <td className="px-6 py-2 text-sm border-b border-gray-200">
-                  <button
-                    onClick={() => {}}
-                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                    title="Delete"
-                  >
-                    <FaEye className="h-5 w-5" />
-                  </button>
-                </td>
+                {showActions && (
+                  <td className="px-6 py-2 text-sm border-b border-gray-200">
+                    <button
+                      onClick={() => {}}
+                      className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                      title="Delete"
+                    >
+                      <FaEye className="h-5 w-5" />
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

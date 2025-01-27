@@ -144,13 +144,13 @@ const SecurityTab = () => {
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
+    <div className="">
       <h3 className="text-xl font-nunito-sans font-extrabold text-primary-600 mb-4">
         System Users
       </h3>
 
       {/* Search and Filter Bar */}
-      <div className="flex gap-4 items-center bg-white p-4 rounded-lg shadow mb-6">
+      <div className="flex gap-4 items-center bg-white p-4 rounded-2xl shadow mb-3">
         <div className="flex w-2/3 relative">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -175,7 +175,7 @@ const SecurityTab = () => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsAddUserModalOpen(true)}
-            className="w-full flex justify-center items-center gap-2 px-5 py-2 border border-primary-700 bg-primary-700 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            className="w-full flex justify-center items-center gap-2 px-5 py-2 border border-primary-500 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
           >
             <FaUserPlus className="w-4 h-4" />
             <span>Add New User</span>
@@ -184,9 +184,9 @@ const SecurityTab = () => {
       </div>
 
       {/* Users Table */}
-      <div className="bg-gray-100 rounded-lg shadow-md overflow-hidden">
+      <div className="bg-gray-100 rounded-2xl shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-200 font-nunito-sans">
+          <thead className="bg-amber-100 font-nunito-sans">
             <tr>
               <th className="px-4 py-5 text-left text-[13px] font-bold text-gray-500 uppercase tracking-wider">
                 <FaUser className="w-5 h-5" />
