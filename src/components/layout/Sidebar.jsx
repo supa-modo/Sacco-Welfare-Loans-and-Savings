@@ -7,13 +7,14 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   Cog6ToothIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import { MdOutlineLogout } from "react-icons/md";
+import { HiMiniUserGroup } from "react-icons/hi2";
+import { MdOutlineLogout, MdSpaceDashboard } from "react-icons/md";
+import { TbLayoutSidebar, TbLayoutSidebarFilled } from "react-icons/tb"; // Import the icons
 import logo from "/logo.png";
 import { useAuth } from "../../context/AuthContext";
+import { PiUserBold, PiUserDuotone } from "react-icons/pi";
 
 const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -22,15 +23,15 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
 
   const navigation = {
     admin: [
-      { name: "Dashboard", to: "/admin/dashboard", icon: HomeIcon },
-      { name: "Members", to: "/admin/members", icon: UserGroupIcon },
+      { name: "Dashboard", to: "/admin/dashboard", icon: MdSpaceDashboard },
+      { name: "Members", to: "/admin/members", icon: HiMiniUserGroup },
       { name: "Loans", to: "/admin/loans", icon: DocumentTextIcon },
       { name: "Savings", to: "/admin/savings", icon: CurrencyDollarIcon },
       { name: "Reports", to: "/admin/reports", icon: ChartBarIcon },
       { name: "Settings", to: "/admin/settings", icon: Cog6ToothIcon },
     ],
     member: [
-      { name: "Dashboard", to: "/member/dashboard", icon: HomeIcon },
+      { name: "Dashboard", to: "/member/dashboard", icon: MdSpaceDashboard },
       { name: "My Loans", to: "/member/loans", icon: DocumentTextIcon },
       { name: "My Savings", to: "/member/savings", icon: CurrencyDollarIcon },
       { name: "Settings", to: "/member/settings", icon: Cog6ToothIcon },
@@ -52,24 +53,38 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
         darkMode
           ? "bg-gray-800 text-gray-200 border-r border-gray-700"
           : "bg-white text-gray-600 border-r border-gray-200"
-      }`}
+      } relative`} // Added relative positioning
     >
-      <div className="h-20 flex items-center justify-center relative">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`absolute -right-3 top-0 bg-primary text-white rounded-md p-1 hover:bg-primary-dark transition-colors duration-200 ${
-            darkMode ? "hover:bg-gray-600" : ""
+      {/* Collapse Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className={`absolute z-10 transition-all duration-300 px-1.5 rounded-br-lg 
+          ${
+            darkMode
+              ? "text-gray-200 hover:bg-gray-700"
+              : "text-gray-600 hover:bg-gray-200"
+          }
+          ${
+            isCollapsed
+              ? "top-2 left-1/2 -translate-x-1/2 py-1"
+              : "-right-11 top-0 bg-white shadow-sm border-r border-b py-1"
           }`}
-        >
-          {isCollapsed ? (
-            <ChevronRightIcon className="h-7 w-4" />
-          ) : (
-            <ChevronLeftIcon className="h-7 w-4" />
-          )}
-        </button>
+      >
         {isCollapsed ? (
-          <div className="flex items-center justify-center">
-            <img src={logo} alt="welfare logo" className="w-10 h-10" />
+          <TbLayoutSidebarFilled size={30} />
+        ) : (
+          <TbLayoutSidebar size={30} />
+        )}
+      </button>
+
+      <div
+        className={`${
+          isCollapsed ? "h-30" : "h-20"
+        }flex items-center justify-center relative`}
+      >
+        {isCollapsed ? (
+          <div className="flex items-center justify-center mt-14">
+            <img src={logo} alt="welfare logo" className="w-12 h-12" />
           </div>
         ) : (
           <div className="flex items-center">
@@ -87,30 +102,28 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
         )}
       </div>
 
-      <nav className="mt-5 px-2 flex flex-col h-[calc(100%-5rem)] justify-between">
-        <div className="space-y-1">
+      <nav className="mt-8 px-2 flex flex-col h-[calc(100%-5rem)] justify-between">
+        <div className="space-y-2">
           {links.map((item) => (
             <NavLink
               key={item.name}
               to={item.to}
               className={({ isActive }) =>
-                `group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
+                `group flex items-center px-2 py-2.5 text-base font-medium rounded-md transition-colors duration-200 ${
                   isActive
                     ? darkMode
                       ? "bg-primary text-white"
                       : "bg-primary text-white"
                     : darkMode
                     ? "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    : "text-gray-600 hover:bg-primary-100 hover:text-gray-900"
+                    : "text-gray-600 hover:bg-primary-100 hover:text-gray-700"
                 } ${isCollapsed ? "justify-center" : ""}`
               }
             >
               <item.icon
                 className={`flex-shrink-0 h-6 w-6 transition-colors duration-200 ${
                   !isCollapsed && "mr-4"
-                } ${
-                  darkMode ? "text-gray-300" : "text-gray-500"
-                } group-hover:text-gray-600`}
+                } `}
                 aria-hidden="true"
               />
               {!isCollapsed && item.name}
@@ -119,7 +132,7 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
         </div>
 
         {/*  User info section */}
-        <div>
+        <div className="mb-2">
           {/* Dark Mode Toggle */}
           <div className="px-2 mb-4">
             <div
@@ -140,7 +153,6 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
                   </span>
                 </div>
               )}
-
               <button
                 onClick={toggleDarkMode}
                 className={`relative ${
@@ -188,20 +200,18 @@ const Sidebar = ({ darkMode, toggleDarkMode, userRole }) => {
             <div className="px-2 pb-6">
               {!isCollapsed ? (
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <UserIcon className="h-6 w-6 mr-2" />
-                    <span className="text-[0.9rem] font-bold font-nunito-sans truncate w-24">
+                  <div className="flex items-center text-gray-500">
+                    <PiUserDuotone className="h-6 w-6 mr-2 " />
+
+                    <span className="text-[0.9rem] font-extrabold font-nunito-sans truncate w-32">
                       {user?.member?.name || user?.userEmail || "User"}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center px-3 py-[0.3rem] text-sm bg-red-500 text-white rounded hover:bg-primary-dark transition-colors duration-200"
+                    className="flex items-center px-3 py-2.5 text-sm bg-red-500 text-white rounded hover:bg-primary-dark transition-colors duration-200"
                   >
-                    <MdOutlineLogout className="h-4 w-4 mr-1" />
-                    <span className="font-semibold font-nunito-sans">
-                      Logout
-                    </span>
+                    <MdOutlineLogout className="h-4 w-4" />
                   </button>
                 </div>
               ) : (

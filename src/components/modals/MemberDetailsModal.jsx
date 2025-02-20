@@ -3,7 +3,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import DataTable from "../common/DataTable";
 import { LiaUserEditSolid } from "react-icons/lia";
 import formatDate from "../../utils/dateFormatter";
-import { loanService, savingsService } from "../../services/api";
+import { loanService, memberService, savingsService } from "../../services/api";
 
 const TabButton = ({ active, onClick, children }) => (
   <button
@@ -320,7 +320,25 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                           render: (item) => `$ ${item.amount.toLocaleString()}`,
                         },
                         { header: "Purpose", accessor: "purpose" },
-                        { header: "Status", accessor: "status" },
+                        {
+                          header: "Status",
+                          accessor: "status",
+                          render: (item) => (
+                            <span
+                              className={`px-3 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
+                                item.status === "Active"
+                                  ? "bg-primary-300 text-green-800"
+                                  : item.status === "Paid"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : item.status === "Pending"
+                                  ? "bg-amber-200 text-yellow-800"
+                                  : "bg-red-400 text-red-100"
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          ),
+                        },
                         {
                           header: "Date Issued",
                           accessor: "dateIssued",
@@ -382,7 +400,21 @@ const MemberDetailsModal = ({ open, onClose, memberId, memberData }) => {
                             render: (item) =>
                               `${formatDate(item.transactionDate)}`,
                           },
-                          { header: "Type", accessor: "transactionType" },
+                          {
+                            header: "Type",
+                            accessor: "transactionType",
+                            render: (item) => (
+                              <span
+                                className={`px-4 py-1 text-xs font-semibold rounded-lg font-nunito-sans ${
+                                  item.transactionType === "Deposit"
+                                    ? "bg-primary-300 text-green-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {item.transactionType}
+                              </span>
+                            ),
+                          },
                           {
                             header: "Amount",
                             accessor: "amount",

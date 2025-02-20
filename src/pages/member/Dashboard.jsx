@@ -15,6 +15,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import { BiTrendingUp } from "react-icons/bi";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
@@ -22,9 +23,11 @@ import DataTable from "../../components/common/DataTable";
 import formatDate from "../../utils/dateFormatter";
 import { useAuth } from "../../context/AuthContext";
 import { loanService, savingsService } from "../../services/api";
+import { PiUserBold, PiUserCircleDuotone } from "react-icons/pi";
+import { MdOutlineLogout } from "react-icons/md";
 
 const MemberDashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [loans, setLoans] = useState([]);
   const [savingsHistory, setSavingsHistory] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -74,6 +77,11 @@ const MemberDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   // Calculate quick stats
@@ -203,14 +211,25 @@ const MemberDashboard = () => {
   return (
     <div className="min-h-screen">
       <div className="mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-amber-700">
-            Welcome back,{" "}
-            <span className="text-primary-500">
-              {user?.member?.name || "Member"}
-            </span>
-          </h1>
-          <p className="text-gray-500 mt-2">Here's your financial overview</p>
+        <div className="mb-8 flex justify-between">
+          <div>
+            <h1 className="text-3xl font-extrabold text-amber-700">
+              Welcome back,{" "}
+              <span className="text-primary-500">
+                {user?.member?.name || "Member"}
+              </span>
+            </h1>
+            <p className="text-gray-500 mt-2">Here's your financial overview</p>
+          </div>
+          <div className="text-white">
+            <button
+              className="flex items-center py-2 px-8 rounded-lg bg-red-500/80"
+              onClick={handleLogout}
+            >
+              <MdOutlineLogout className="h-5 w-5 mr-2" />
+              <span className="font-semibold font-nunito-sans">Logout</span>
+            </button>
+          </div>
         </div>
 
         {/* Quick Stats */}
@@ -220,7 +239,7 @@ const MemberDashboard = () => {
             return (
               <div
                 key={stat.title}
-                className="bg-gradient-to-br from-primary-100 via-gray-100 to-white py-6 px-8 rounded-xl border border-gray-300"
+                className="bg-gradient-to-br from-amber-600/10 via-gray-100 to-primary-100/40 shadow-md py-6 px-8 rounded-xl border border-gray-300"
               >
                 <div className="flex items-center space-x-10 mb-2">
                   <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10`}>
@@ -242,16 +261,17 @@ const MemberDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Chart Section */}
           <div className="lg:col-span-2 bg-gradient-to-br from-amber-50 via-gray-100 to-white py-6 px-8 rounded-xl border border-gray-200 shadow-sm">
-            <h1 className="text-2xl font-extrabold mb-3 text-amber-700">
-              Financial Overview
+            <h1 className="text-lg font-nunito-sans font-extrabold uppercase mb-3 text-amber-700">
+              your Financial Overview
             </h1>
-            <div className="h-[400px]">
+            <div className="h-[400px] font-nunito-sans font-semibold text-[0.92rem]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
+                  <Legend />
                   <Area
                     type="monotone"
                     dataKey="savingsBalance"

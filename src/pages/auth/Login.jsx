@@ -5,7 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import bgImage from "../../assets/sacco-bg.jpg";
 import logo from "/logo.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { PiUserBold } from "react-icons/pi";
+import { PiUserBold, PiUserDuotone } from "react-icons/pi";
 import { GiPadlock } from "react-icons/gi";
 
 const Login = () => {
@@ -92,7 +92,7 @@ const Login = () => {
                 Email address
               </label>
               <div className="relative">
-                <PiUserBold className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-5 w-5" />
+                <PiUserDuotone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 h-5 w-5" />
                 <input
                   id="email"
                   type="email"

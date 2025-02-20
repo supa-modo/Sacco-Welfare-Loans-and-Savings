@@ -13,6 +13,10 @@ export const memberService = {
     const response = await api.get(`/members/${memberId}`);
     return response.data;
   },
+  updateMember: async (memberId, editedData) => {
+    const response = await api.put(`/members/${memberId}`, editedData);
+    return response.data;
+  },
 };
 
 export const savingsService = {

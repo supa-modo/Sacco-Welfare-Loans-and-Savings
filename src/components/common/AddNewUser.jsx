@@ -56,10 +56,10 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
         <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="px-8 py-4 bg-gradient-to-r from-primary-100 to-primary-50 border-b border-gray-100">
+          <div className="px-8 py-4 bg-gradient-to-r from-primary-100 to-primary-50 shadow-sm border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-primary-900 to-primary-700 bg-clip-text text-transparent">
+                <h2 className="text-2xl  font-bold bg-gradient-to-r from-primary-900 to-primary-700 bg-clip-text text-transparent">
                   Add New User
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
