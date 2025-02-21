@@ -3,7 +3,7 @@ import axios from "axios";
 import api from "../utils/api";
 
 const AuthContext = createContext(null);
-const API_URL = "http://localhost:5000/api"; // Update with your backend URL
+const API_URL = "https://sacco-welfare-backend.onrender.com/api";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
