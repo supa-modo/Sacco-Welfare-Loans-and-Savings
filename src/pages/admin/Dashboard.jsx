@@ -29,9 +29,10 @@ import DataTable from "../../components/common/DataTable";
 import FinancialHistoryModal from "../../components/modals/HistoryModal";
 import formatDate from "../../utils/dateFormatter";
 import { loanService, memberService, savingsService } from "../../services/api";
+import { MdOutlineLogout } from "react-icons/md";
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState({
@@ -63,6 +64,8 @@ const Dashboard = () => {
         loanService.getAllLoans(),
         savingsService.getAllSavings(),
       ]);
+
+      
 
       // Get recent transactions from both loans and savings
       const loanTransactions = loansData
@@ -262,6 +265,11 @@ const Dashboard = () => {
     },
   ];
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="p-6 space-y-6 max-w-[2000px] mx-auto">
       {/* Welcome Section */}
@@ -274,6 +282,15 @@ const Dashboard = () => {
           <p className="text-gray-500 mt-2">
             Here's what's happening with the welfare group today.
           </p>
+        </div>
+        <div className="text-white">
+          <button
+            className="flex items-center py-2 px-8 rounded-lg bg-red-500/80"
+            onClick={handleLogout}
+          >
+            <MdOutlineLogout className="h-5 w-5 mr-2" />
+            <span className="font-semibold font-nunito-sans">Logout</span>
+          </button>
         </div>
       </div>
 
